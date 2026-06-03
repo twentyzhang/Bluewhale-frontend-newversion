@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { message } from 'antd';
-
-const TOKEN_KEY = 'token';
+import { clearAuth, TOKEN_KEY } from '../utils/auth';
 
 const request = axios.create({
   baseURL: '/api',
@@ -20,10 +19,20 @@ request.interceptors.request.use(
 );
 
 request.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    const body = response.data;
+    if (body && typeof body.code === 'number') {
+      if (body.code === 200) {
+        return body.data;
+      }
+      message.error(body.message || '请求失败');
+      return Promise.reject(new Error(body.message || '请求失败'));
+    }
+    return body;
+  },
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem(TOKEN_KEY);
+      clearAuth();
       message.error('登录已过期，请重新登录');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
@@ -37,5 +46,4 @@ request.interceptors.response.use(
   },
 );
 
-export { TOKEN_KEY };
 export default request;

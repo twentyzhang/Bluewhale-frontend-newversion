@@ -1,0 +1,291 @@
+/* 南京大学标准色「南大紫」RGB ≈ #6A005F（CMYK: C50 M100 Y0 K40） */
+/* 辅色参考校色传统：紫金二色 — 金色用于点缀 */
+:root {
+  --nju-purple: #6a005f;
+  --nju-purple-dark: #3d0045;
+  --nju-purple-mid: #52004a;
+  --nju-purple-light: #9b4d94;
+  --nju-purple-pale: #f5eef5;
+  --nju-gold: #c9a227;
+  --nju-gold-light: #e8c547;
+}
+
+.auth-page {
+  display: flex;
+  min-height: 100vh;
+  background: var(--nju-purple-pale);
+}
+
+/* —— 左侧品牌区 —— */
+.auth-brand {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  overflow: hidden;
+  background: linear-gradient(
+    145deg,
+    var(--nju-purple-dark) 0%,
+    var(--nju-purple-mid) 40%,
+    var(--nju-purple) 100%
+  );
+  color: #fff;
+}
+
+.auth-brand-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.auth-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.4;
+}
+
+.auth-blob-1 {
+  width: 340px;
+  height: 340px;
+  top: -90px;
+  right: -70px;
+  background: var(--nju-purple-light);
+}
+
+.auth-blob-2 {
+  width: 260px;
+  height: 260px;
+  bottom: 8%;
+  left: -70px;
+  background: var(--nju-gold);
+  opacity: 0.28;
+}
+
+.auth-blob-3 {
+  width: 220px;
+  height: 220px;
+  bottom: -50px;
+  right: 18%;
+  background: #7a3d8f;
+}
+
+.auth-brand-content {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.auth-logo-mark {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: #fff;
+  border: 2px solid var(--nju-gold);
+  padding: 10px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.auth-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.auth-logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: none;
+  border: none;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--nju-purple);
+  box-shadow: none;
+}
+
+.auth-brand-title {
+  margin: 0 !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+}
+
+.auth-brand-tagline {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+}
+
+.auth-brand-desc {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 32px !important;
+}
+
+.auth-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-features li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+}
+
+.auth-features .anticon {
+  font-size: 18px;
+  color: var(--nju-gold-light);
+}
+
+/* —— 右侧表单区 —— */
+.auth-panel {
+  flex: 0 0 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+  background: linear-gradient(180deg, #fdfbfd 0%, var(--nju-purple-pale) 100%);
+}
+
+.auth-form-wrap {
+  width: 100%;
+  max-width: 380px;
+  padding: 40px 36px 32px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow:
+    0 4px 6px rgba(106, 0, 95, 0.04),
+    0 20px 48px rgba(106, 0, 95, 0.1);
+  border: 1px solid rgba(106, 0, 95, 0.08);
+}
+
+.auth-form-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.auth-form-title {
+  margin: 0 0 8px !important;
+  color: var(--nju-purple-dark) !important;
+  font-weight: 600 !important;
+}
+
+.auth-form-subtitle {
+  font-size: 14px;
+}
+
+.auth-form-wrap .ant-form-item-label > label {
+  color: #5c4a5a;
+  font-weight: 500;
+}
+
+.auth-form-wrap .ant-input-affix-wrapper,
+.auth-form-wrap .ant-input {
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.auth-form-wrap .ant-input-affix-wrapper:hover,
+.auth-form-wrap .ant-input-affix-wrapper-focused {
+  border-color: var(--nju-purple-light);
+  box-shadow: 0 0 0 2px rgba(106, 0, 95, 0.08);
+}
+
+.auth-form-wrap .ant-btn-primary {
+  height: 44px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  background: linear-gradient(
+    135deg,
+    var(--nju-purple-mid),
+    var(--nju-purple)
+  );
+  border: none;
+  box-shadow: 0 4px 16px rgba(106, 0, 95, 0.35);
+}
+
+.auth-form-wrap .ant-btn-primary:hover {
+  background: linear-gradient(
+    135deg,
+    var(--nju-purple),
+    var(--nju-purple-light)
+  ) !important;
+}
+
+.auth-form-footer {
+  text-align: center;
+  margin-top: 4px;
+}
+
+.auth-form-footer a {
+  color: var(--nju-purple);
+  font-weight: 500;
+}
+
+.auth-form-footer a:hover {
+  color: var(--nju-purple-light);
+}
+
+.auth-footer-note {
+  margin-top: 32px;
+  font-size: 12px;
+  text-align: center;
+  color: #8a7a88 !important;
+}
+
+/* —— 响应式 —— */
+@media (max-width: 900px) {
+  .auth-page {
+    flex-direction: column;
+  }
+
+  .auth-brand {
+    flex: none;
+    padding: 36px 24px;
+    min-height: auto;
+  }
+
+  .auth-brand-content {
+    max-width: 100%;
+  }
+
+  .auth-brand-desc,
+  .auth-features {
+    display: none;
+  }
+
+  .auth-panel {
+    flex: 1;
+    width: 100%;
+    padding: 32px 20px 40px;
+  }
+}
