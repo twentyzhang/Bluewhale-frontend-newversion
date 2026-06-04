@@ -8,8 +8,16 @@ import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import Profile from '../pages/profile/Profile';
 import ChangePassword from '../pages/profile/ChangePassword';
+import AddressList from '../pages/profile/AddressList';
 import StaffHome from '../pages/staff/StaffHome';
 import AdminHome from '../pages/admin/AdminHome';
+import StoreDetail from '../pages/customer/StoreDetail';
+import ProductDetail from '../pages/customer/ProductDetail';
+import SearchProducts from '../pages/customer/SearchProducts';
+import Cart from '../pages/customer/Cart';
+import Checkout from '../pages/customer/Checkout';
+import OrderList from '../pages/customer/OrderList';
+import OrderDetail from '../pages/customer/OrderDetail';
 
 const router = createBrowserRouter([
   {
@@ -29,38 +37,112 @@ const router = createBrowserRouter([
     ),
   },
   {
-    element: (
-      <ProtectedRoute>
-        <MainLayout />
-      </ProtectedRoute>
-    ),
+    element: <MainLayout />,
     children: [
       {
         index: true,
         element: <HomeRouter />,
       },
       {
+        path: 'search',
+        element: <SearchProducts />,
+      },
+      {
+        path: 'stores/:storeId',
+        element: <StoreDetail />,
+      },
+      {
+        path: 'products/:productId',
+        element: <ProductDetail />,
+      },
+      {
+        path: 'cart',
+        element: (
+          <ProtectedRoute>
+            <RequireRole roles={['CUSTOMER']}>
+              <Cart />
+            </RequireRole>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'checkout',
+        element: (
+          <ProtectedRoute>
+            <RequireRole roles={['CUSTOMER']}>
+              <Checkout />
+            </RequireRole>
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: 'profile',
-        element: <Profile />,
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
       },
       {
         path: 'profile/password',
-        element: <ChangePassword />,
+        element: (
+          <ProtectedRoute>
+            <ChangePassword />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'profile/addresses',
+        element: (
+          <ProtectedRoute>
+            <RequireRole roles={['CUSTOMER']}>
+              <AddressList />
+            </RequireRole>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'addresses',
+        element: <Navigate to="/profile/addresses" replace />,
+      },
+      {
+        path: 'orders',
+        element: (
+          <ProtectedRoute>
+            <RequireRole roles={['CUSTOMER']}>
+              <OrderList />
+            </RequireRole>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'orders/:orderId',
+        element: (
+          <ProtectedRoute>
+            <RequireRole roles={['CUSTOMER']}>
+              <OrderDetail />
+            </RequireRole>
+          </ProtectedRoute>
+        ),
       },
       {
         path: 'staff',
         element: (
-          <RequireRole roles={['STAFF']}>
-            <StaffHome />
-          </RequireRole>
+          <ProtectedRoute>
+            <RequireRole roles={['STAFF']}>
+              <StaffHome />
+            </RequireRole>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'admin',
         element: (
-          <RequireRole roles={['ADMIN']}>
-            <AdminHome />
-          </RequireRole>
+          <ProtectedRoute>
+            <RequireRole roles={['ADMIN']}>
+              <AdminHome />
+            </RequireRole>
+          </ProtectedRoute>
         ),
       },
     ],

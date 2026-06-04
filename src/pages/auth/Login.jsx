@@ -22,6 +22,7 @@ function Login() {
       const data = await login(values);
       saveAuth({
         token: data.token,
+        refreshToken: data.refreshToken,
         userId: data.userId,
         nickname: data.nickname,
         role: data.role,
@@ -31,6 +32,7 @@ function Login() {
         const me = await getMe();
         saveAuth({
           token: data.token,
+          refreshToken: data.refreshToken,
           userId: me.id,
           nickname: me.nickname,
           role: me.role,

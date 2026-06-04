@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import ProfileNav from '../../components/ProfileNav';
 import { Button, Card, Form, Input, Typography, message } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
 import { changePassword } from '../../api/user';
@@ -26,7 +27,9 @@ function ChangePassword() {
   };
 
   return (
-    <Card style={{ maxWidth: 480 }}>
+    <div>
+      <ProfileNav activeKey="password" />
+      <Card style={{ maxWidth: 480 }}>
       <Title level={4} style={{ marginTop: 0 }}>
         修改密码
       </Title>
@@ -70,12 +73,10 @@ function ChangePassword() {
           <Button type="primary" htmlType="submit" loading={loading}>
             确认修改
           </Button>
-          <Link to="/profile" style={{ marginLeft: 12 }}>
-            返回个人信息
-          </Link>
         </Form.Item>
       </Form>
-    </Card>
+      </Card>
+    </div>
   );
 }
 

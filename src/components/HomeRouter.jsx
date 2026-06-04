@@ -1,16 +1,18 @@
 import { Navigate } from 'react-router-dom';
-import Dashboard from '../pages/Dashboard';
-import { getAuth } from '../utils/auth';
+import StoreList from '../pages/customer/StoreList';
+import { getAuth, isLoggedIn } from '../utils/auth';
 
 function HomeRouter() {
-  const { role } = getAuth();
-  if (role === 'STAFF') {
-    return <Navigate to="/staff" replace />;
+  if (isLoggedIn()) {
+    const { role } = getAuth();
+    if (role === 'STAFF') {
+      return <Navigate to="/staff" replace />;
+    }
+    if (role === 'ADMIN') {
+      return <Navigate to="/admin" replace />;
+    }
   }
-  if (role === 'ADMIN') {
-    return <Navigate to="/admin" replace />;
-  }
-  return <Dashboard />;
+  return <StoreList />;
 }
 
 export default HomeRouter;

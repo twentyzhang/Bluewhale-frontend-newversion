@@ -49,10 +49,11 @@ npm run format       # Prettier 格式化 src
 | 优先级 | 文件 | 用途 |
 |--------|------|------|
 | ① | [`docs/requirements.md`](docs/requirements.md) | 业务需求、角色、功能模块、**暂不实现**范围 |
-| ② | [`docs/api-spec.md`](docs/api-spec.md) | REST 路径、请求/响应、权限、分页格式 |
-| ③ | [`docs/实现细节.md`](docs/实现细节.md) | 各模块实现要点、页面交互、边界情况 |
-| ④ | [`docs/前端进度.md`](docs/前端进度.md) | 前端页面与 API 对接进度（改 UI 前先看） |
-| ⑤ | [`docs/进度.md`](docs/进度.md) | **后端**实现进度 |
+| ② | [`docs/frontend-handoff.md`](docs/frontend-handoff.md) | **后端对接主文档**：鉴权、refresh、错误码、测试账号、联调顺序 |
+| ③ | [`docs/api-spec.md`](docs/api-spec.md) | REST 路径、请求/响应、权限、分页格式 |
+| ④ | [`docs/实现细节.md`](docs/实现细节.md) | 各模块实现要点、页面交互、边界情况 |
+| ⑤ | [`docs/前端进度.md`](docs/前端进度.md) | 前端页面与 API 对接进度（改 UI 前先看） |
+| ⑥ | [`docs/进度.md`](docs/进度.md) | **后端**实现进度 |
 
 ### 3.2 排错 / 联调失败
 
@@ -105,7 +106,7 @@ cursorTry/
 ## 5. 与后端对接约定
 
 - **Base URL**：`/api`（开发环境由 Vite 代理到 `8080`）
-- **认证**：`Authorization: Bearer <token>`，token 存 `localStorage`，键名 `token`
+- **认证**：`Authorization: Bearer <token>`；同时持久化 `refreshToken`（`localStorage`），过期时调用 `POST /api/auth/refresh` 换新 token（详见 [`docs/frontend-handoff.md`](docs/frontend-handoff.md) §2.3）。
 - **统一响应**（见 `api-spec.md`）：
 
   ```json
@@ -116,6 +117,7 @@ cursorTry/
 
 - **登录接口**：`POST /api/auth/login`，请求体 `{ phone, password }`；响应 `data` 含 `token`、`userId`、`nickname`、`role`。
 - **角色路由**：登录后按 `CUSTOMER` / `STAFF` / `ADMIN` 进入不同布局（见 `设计决策.md` D-006）。
+- **游客入口**：`/` 对未登录用户开放（商品浏览等待商店模块）；个人中心、`/staff`、`/admin` 仍需登录。
 
 ---
 
@@ -123,7 +125,8 @@ cursorTry/
 
 - ✅ 项目脚手架、代理、Axios 封装、基础路由、登录页占位、Dashboard 占位
 - ✅ 用户模块已完成（登录/注册/个人中心/改密、`Result` 解包、按角色跳转）
-- ⚠️ 商品浏览、购物车、订单等业务页面待开发
+- ⚠️ 优惠券领取、评论等待开发
+- ✅ 商品浏览、购物车、地址、下单结算、订单管理已完成
 - 📋 模块勾选见 [`docs/前端进度.md`](docs/前端进度.md)
 
 ---

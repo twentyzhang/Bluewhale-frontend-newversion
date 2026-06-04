@@ -74,9 +74,16 @@ function Register() {
           <Form.Item
             name="nickname"
             label="昵称"
-            rules={[{ required: true, message: '请输入昵称' }]}
+            rules={[
+              { required: true, message: '请输入昵称' },
+              { min: 2, max: 20, message: '昵称长度为2-20个字符' },
+            ]}
           >
-            <Input prefix={<UserOutlined />} placeholder="昵称" />
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="2-20个字符"
+              maxLength={20}
+            />
           </Form.Item>
           <Form.Item
             name="password"

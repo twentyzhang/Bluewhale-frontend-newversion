@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
   Button,
   Card,
@@ -11,6 +10,7 @@ import {
   message,
 } from 'antd';
 import { getMe, updateProfile } from '../../api/user';
+import ProfileNav from '../../components/ProfileNav';
 import { saveAuth } from '../../utils/auth';
 
 const { Title } = Typography;
@@ -73,10 +73,12 @@ function Profile() {
   }
 
   return (
-    <Card>
-      <Title level={4} style={{ marginTop: 0 }}>
-        个人信息
-      </Title>
+    <div>
+      <ProfileNav activeKey="profile" />
+      <Card>
+        <Title level={4} style={{ marginTop: 0 }}>
+          个人信息
+        </Title>
       <Descriptions column={1} bordered size="small" style={{ marginBottom: 24 }}>
         <Descriptions.Item label="用户 ID">{user?.id}</Descriptions.Item>
         <Descriptions.Item label="手机号">{user?.phone}</Descriptions.Item>
@@ -104,10 +106,8 @@ function Profile() {
           </Button>
         </Form.Item>
       </Form>
-      <div style={{ marginTop: 16 }}>
-        <Link to="/profile/password">修改密码 →</Link>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }
 
