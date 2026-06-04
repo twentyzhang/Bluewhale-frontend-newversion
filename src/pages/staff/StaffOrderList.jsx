@@ -1,34 +1,31 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Breadcrumb,
   Button,
   Card,
   Empty,
   Pagination,
-  Popconfirm,
-  Space,
   Spin,
   Table,
   Tabs,
   Tag,
   Typography,
-  message,
 } from 'antd';
-import { HomeOutlined } from '@ant-design/icons';
-import { cancelOrder, confirmOrder, getMyOrders, payOrder } from '../../api/order';
+import { listStoreOrders } from '../../api/order';
+import StaffStoreGuard from '../../components/StaffStoreGuard';
+import { useStaffStoreId } from '../../hooks/useStaffStore';
 import { formatPrice } from '../../utils/format';
 import { getOrderStatusMeta, ORDER_STATUS_TABS } from '../../utils/orderStatus';
 
 const { Title } = Typography;
 
-function OrderList() {
+function StaffOrderList() {
+  const storeId = useStaffStoreId();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const status = searchParams.get('status') || '';
 
   const [loading, setLoading] = useState(true);
-  const [actingId, setActingId] = useState(null);
   const [records, setRecords] = useState([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -36,11 +33,12 @@ function OrderList() {
 
   const loadOrders = useCallback(
     async (current = 1, filterStatus = status) => {
+      if (!storeId) return;
       setLoading(true);
       try {
         const params = { page: current, size: pageSize };
         if (filterStatus) params.status = filterStatus;
-        const data = await getMyOrders(params);
+        const data = await listStoreOrders(storeId, params);
         setRecords(data.records || []);
         setTotal(data.total ?? 0);
         setPage(data.current ?? current);
@@ -50,7 +48,7 @@ function OrderList() {
         setLoading(false);
       }
     },
-    [status],
+    [storeId, status],
   );
 
   useEffect(() => {
@@ -64,19 +62,6 @@ function OrderList() {
     setSearchParams(next);
   };
 
-  const runAction = async (orderId, action, successMsg) => {
-    setActingId(orderId);
-    try {
-      await action();
-      message.success(successMsg);
-      await loadOrders(page, status);
-    } catch {
-      // 错误已提示
-    } finally {
-      setActingId(null);
-    }
-  };
-
   const columns = [
     { title: '订单号', dataIndex: 'id', width: 100 },
     {
@@ -88,7 +73,6 @@ function OrderList() {
         return <Tag color={meta.color}>{meta.label}</Tag>;
       },
     },
-    { title: '商店', dataIndex: 'storeName' },
     { title: '商品数', dataIndex: 'itemCount', width: 80 },
     {
       title: '应付金额',
@@ -104,69 +88,25 @@ function OrderList() {
     },
     {
       title: '操作',
-      width: 200,
+      width: 120,
       render: (_, record) => (
-        <Space wrap size="small">
-          <Button type="link" onClick={() => navigate(`/orders/${record.id}`)}>
-            详情
-          </Button>
-          {record.status === 'PENDING_PAYMENT' && (
-            <>
-              <Button
-                type="link"
-                loading={actingId === record.id}
-                onClick={() => runAction(record.id, () => payOrder(record.id), '支付成功')}
-              >
-                支付
-              </Button>
-              <Popconfirm
-                title="确定取消订单？"
-                onConfirm={() =>
-                  runAction(record.id, () => cancelOrder(record.id), '订单已取消')
-                }
-              >
-                <Button type="link" danger loading={actingId === record.id}>
-                  取消
-                </Button>
-              </Popconfirm>
-            </>
-          )}
-          {record.status === 'SHIPPED' && (
-            <Popconfirm
-              title="确认已收到商品？"
-              onConfirm={() =>
-                runAction(record.id, () => confirmOrder(record.id), '已确认收货')
-              }
-            >
-              <Button type="link" loading={actingId === record.id}>
-                确认收货
-              </Button>
-            </Popconfirm>
-          )}
-        </Space>
+        <Button type="link" onClick={() => navigate(`/staff/orders/${record.id}`)}>
+          {record.status === 'PAID' ? '去发货' : '详情'}
+        </Button>
       ),
     },
   ];
 
   return (
-    <div>
-      <Breadcrumb
-        style={{ marginBottom: 16 }}
-        items={[
-          { title: <Link to="/"><HomeOutlined /> 首页</Link> },
-          { title: '我的订单' },
-        ]}
-      />
-      <Title level={2} style={{ marginTop: 0 }}>
-        我的订单
+    <StaffStoreGuard>
+      <Title level={3} style={{ marginTop: 0, marginBottom: 16 }}>
+        门店订单
       </Title>
       <Card>
         <Tabs activeKey={status} items={ORDER_STATUS_TABS} onChange={handleTabChange} />
         <Spin spinning={loading}>
           {records.length === 0 && !loading ? (
-            <Empty description="暂无订单">
-              <Link to="/">去逛逛</Link>
-            </Empty>
+            <Empty description="暂无订单" />
           ) : (
             <>
               <Table rowKey="id" columns={columns} dataSource={records} pagination={false} />
@@ -183,8 +123,8 @@ function OrderList() {
           )}
         </Spin>
       </Card>
-    </div>
+    </StaffStoreGuard>
   );
 }
 
-export default OrderList;
+export default StaffOrderList;

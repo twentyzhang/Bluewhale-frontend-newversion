@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, Col, Empty, Pagination, Row, Spin, Typography } from 'antd';
 import { searchProducts } from '../../api/product';
@@ -9,20 +9,42 @@ import '../../styles/browse.css';
 const { Title, Paragraph } = Typography;
 const PAGE_SIZE = 12;
 
+function parseFiltersFromParams(searchParams) {
+  const filters = {};
+  const keyword = searchParams.get('keyword');
+  const categoryId = searchParams.get('categoryId');
+  const minPrice = searchParams.get('minPrice');
+  const maxPrice = searchParams.get('maxPrice');
+  if (keyword) filters.keyword = keyword;
+  if (categoryId) filters.categoryId = Number(categoryId);
+  if (minPrice != null && minPrice !== '') filters.minPrice = Number(minPrice);
+  if (maxPrice != null && maxPrice !== '') filters.maxPrice = Number(maxPrice);
+  return filters;
+}
+
+function filtersToSearchParams(filters) {
+  const nextParams = new URLSearchParams();
+  if (filters.keyword) nextParams.set('keyword', filters.keyword);
+  if (filters.categoryId) nextParams.set('categoryId', String(filters.categoryId));
+  if (filters.minPrice != null) nextParams.set('minPrice', String(filters.minPrice));
+  if (filters.maxPrice != null) nextParams.set('maxPrice', String(filters.maxPrice));
+  return nextParams;
+}
+
 function SearchProducts() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const keywordFromUrl = searchParams.get('keyword') || '';
+  const filtersFromUrl = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
 
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState(filtersFromUrl);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    setFilters(keywordFromUrl ? { keyword: keywordFromUrl } : {});
+    setFilters(filtersFromUrl);
     setPage(1);
-  }, [keywordFromUrl]);
+  }, [filtersFromUrl]);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,9 +74,7 @@ function SearchProducts() {
   const handleSearch = (params) => {
     setFilters(params);
     setPage(1);
-    const nextParams = new URLSearchParams();
-    if (params.keyword) nextParams.set('keyword', params.keyword);
-    setSearchParams(nextParams);
+    setSearchParams(filtersToSearchParams(params));
   };
 
   return (
@@ -68,7 +88,7 @@ function SearchProducts() {
       <Card style={{ marginBottom: 16 }}>
         <ProductFilterBar
           onSearch={handleSearch}
-          initialValues={{ keyword: keywordFromUrl, ...filters }}
+          initialValues={filters}
           loading={loading}
         />
       </Card>

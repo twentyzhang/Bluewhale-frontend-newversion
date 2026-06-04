@@ -6,7 +6,7 @@ import '../../styles/browse.css';
 
 const { Title, Paragraph } = Typography;
 
-function StoreList() {
+function StoreList({ embedded = false }) {
   const [loading, setLoading] = useState(true);
   const [records, setRecords] = useState([]);
   const [pagination, setPagination] = useState({
@@ -39,14 +39,21 @@ function StoreList() {
 
   return (
     <div>
-      <div className="browse-page-header">
-        <Title level={2} style={{ marginTop: 0 }}>
+      {!embedded && (
+        <div className="browse-page-header">
+          <Title level={2} style={{ marginTop: 0 }}>
+            探索商店
+          </Title>
+          <Paragraph type="secondary">
+            浏览国货品牌门店，发现优质商品。无需登录即可浏览。
+          </Paragraph>
+        </div>
+      )}
+      {embedded && (
+        <Title level={4} style={{ marginTop: 0, marginBottom: 16 }}>
           探索商店
         </Title>
-        <Paragraph type="secondary">
-          浏览国货品牌门店，发现优质商品。无需登录即可浏览。
-        </Paragraph>
-      </div>
+      )}
       <Spin spinning={loading}>
         {records.length === 0 && !loading ? (
           <Empty description="暂无商店" />

@@ -7,9 +7,15 @@ import {
   LockOutlined,
   LogoutOutlined,
   SearchOutlined,
+  ShoppingOutlined,
   ShoppingCartOutlined,
   EnvironmentOutlined,
   FileTextOutlined,
+  BarChartOutlined,
+  GiftOutlined,
+  ShopOutlined,
+  TagsOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons';
 import { clearAuth, getAuth, isLoggedIn } from '../utils/auth';
 import { useCart } from '../hooks/useCart';
@@ -69,6 +75,12 @@ function MainLayout() {
             label: '收货地址',
             onClick: () => navigate('/profile/addresses'),
           },
+          {
+            key: 'my-coupons',
+            icon: <GiftOutlined />,
+            label: '我的优惠券',
+            onClick: () => navigate('/coupons/mine'),
+          },
         ]
       : []),
     { type: 'divider' },
@@ -83,41 +95,69 @@ function MainLayout() {
   const homePath =
     role === 'STAFF' ? '/staff' : role === 'ADMIN' ? '/admin' : '/';
 
-  const navItems = [
-    {
-      key: 'home',
-      icon: <HomeOutlined />,
-      label: '首页',
-      onClick: () => navigate(loggedIn ? homePath : '/'),
-    },
-    {
-      key: 'search',
-      icon: <SearchOutlined />,
-      label: '搜商品',
-      onClick: () => navigate('/search'),
-    },
-  ];
+  const navItems = [];
 
-  if (loggedIn && role === 'CUSTOMER') {
+  if (loggedIn && role === 'ADMIN') {
+    navItems.push(
+      { key: 'admin', icon: <HomeOutlined />, label: '控制台', onClick: () => navigate('/admin') },
+      { key: 'admin-stores', icon: <ShopOutlined />, label: '商店', onClick: () => navigate('/admin/stores') },
+      { key: 'admin-categories', icon: <TagsOutlined />, label: '分类', onClick: () => navigate('/admin/categories') },
+      { key: 'admin-coupons', icon: <GiftOutlined />, label: '优惠券', onClick: () => navigate('/admin/coupons') },
+      { key: 'admin-reports', icon: <BarChartOutlined />, label: '报表', onClick: () => navigate('/admin/reports') },
+    );
+  } else if (loggedIn && role === 'STAFF') {
+    navItems.push(
+      { key: 'staff', icon: <HomeOutlined />, label: '工作台', onClick: () => navigate('/staff') },
+      { key: 'staff-products', icon: <ShoppingOutlined />, label: '商品', onClick: () => navigate('/staff/products') },
+      { key: 'staff-orders', icon: <UnorderedListOutlined />, label: '订单', onClick: () => navigate('/staff/orders') },
+      { key: 'staff-coupons', icon: <GiftOutlined />, label: '优惠券', onClick: () => navigate('/staff/coupons') },
+      { key: 'staff-reports', icon: <BarChartOutlined />, label: '报表', onClick: () => navigate('/staff/reports') },
+    );
+  } else {
     navItems.push(
       {
-        key: 'cart',
-        icon: <ShoppingCartOutlined />,
-        label: (
-          <Badge count={itemCount} size="small" offset={[4, 0]}>
-            购物车
-          </Badge>
-        ),
-        onClick: () => navigate('/cart'),
+        key: 'home',
+        icon: <HomeOutlined />,
+        label: '首页',
+        onClick: () => navigate(loggedIn ? homePath : '/'),
       },
       {
-        key: 'orders',
-        icon: <FileTextOutlined />,
-        label: '我的订单',
-        onClick: () => navigate('/orders'),
+        key: 'search',
+        icon: <SearchOutlined />,
+        label: '搜商品',
+        onClick: () => navigate('/search'),
+      },
+      {
+        key: 'coupons',
+        icon: <GiftOutlined />,
+        label: '优惠券',
+        onClick: () => navigate('/coupons'),
       },
     );
+
+    if (loggedIn && role === 'CUSTOMER') {
+      navItems.push(
+        {
+          key: 'cart',
+          icon: <ShoppingCartOutlined />,
+          label: (
+            <Badge count={itemCount} size="small" offset={[4, 0]}>
+              购物车
+            </Badge>
+          ),
+          onClick: () => navigate('/cart'),
+        },
+        {
+          key: 'orders',
+          icon: <FileTextOutlined />,
+          label: '我的订单',
+          onClick: () => navigate('/orders'),
+        },
+      );
+    }
   }
+
+  const showCustomerSearch = !(loggedIn && (role === 'ADMIN' || role === 'STAFF'));
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -147,15 +187,17 @@ function MainLayout() {
             style={{ flex: 1, minWidth: 160, border: 'none' }}
           />
         </Space>
-        <Input.Search
-          placeholder="搜索商品"
-          allowClear
-          value={searchKeyword}
-          onChange={(e) => setSearchKeyword(e.target.value)}
-          onSearch={handleSearch}
-          style={{ maxWidth: 280, display: 'none' }}
-          className="header-search-desktop"
-        />
+        {showCustomerSearch && (
+          <Input.Search
+            placeholder="搜索商品"
+            allowClear
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            onSearch={handleSearch}
+            style={{ maxWidth: 280, display: 'none' }}
+            className="header-search-desktop"
+          />
+        )}
         {loggedIn ? (
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
             <Space style={{ cursor: 'pointer', color: '#fff', whiteSpace: 'nowrap' }}>

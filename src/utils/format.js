@@ -8,12 +8,19 @@ export function formatRating(value) {
   return Number(value).toFixed(1);
 }
 
-export function formatCouponLabel(coupon) {
+export function formatCouponValue(coupon) {
   if (!coupon) return '';
   if (coupon.type === 'DISCOUNT') {
-    return `${coupon.groupName}（${(Number(coupon.value) * 10).toFixed(1)}折，满${Number(coupon.minOrderAmount).toFixed(2)}元可用）`;
+    return `${(Number(coupon.value) * 10).toFixed(1)}折`;
   }
-  return `${coupon.groupName}（减${Number(coupon.value).toFixed(2)}元，满${Number(coupon.minOrderAmount).toFixed(2)}元可用）`;
+  return `减${Number(coupon.value).toFixed(2)}元`;
+}
+
+export function formatCouponLabel(coupon) {
+  if (!coupon) return '';
+  const name = coupon.groupName || coupon.name || '优惠券';
+  const min = Number(coupon.minOrderAmount).toFixed(2);
+  return `${name}（${formatCouponValue(coupon)}，满${min}元可用）`;
 }
 
 export function formatAddress(addr) {

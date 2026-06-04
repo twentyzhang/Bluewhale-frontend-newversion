@@ -11,10 +11,16 @@ function ProfileNav({ activeKey }) {
   ];
 
   if (role === 'CUSTOMER') {
-    items.push({
-      key: 'addresses',
-      label: <Link to="/profile/addresses">收货地址</Link>,
-    });
+    items.push(
+      {
+        key: 'addresses',
+        label: <Link to="/profile/addresses">收货地址</Link>,
+      },
+      {
+        key: 'coupons',
+        label: <Link to="/coupons/mine">我的优惠券</Link>,
+      },
+    );
   }
 
   return (

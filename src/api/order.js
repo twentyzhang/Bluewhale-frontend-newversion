@@ -27,3 +27,11 @@ export function confirmOrder(orderId) {
 export function refundOrder(orderId, data) {
   return request.post(`/orders/${orderId}/refund`, data);
 }
+
+export function listStoreOrders(storeId, params) {
+  return request.get(`/stores/${storeId}/orders`, { params });
+}
+
+export function shipOrder(storeId, orderId, data) {
+  return request.post(`/stores/${storeId}/orders/${orderId}/ship`, data);
+}

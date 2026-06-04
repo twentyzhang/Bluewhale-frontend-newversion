@@ -1,26 +1,53 @@
 import { useEffect, useState } from 'react';
-import { Button, Col, Form, Input, InputNumber, Row, Select, Space } from 'antd';
+import { Button, Cascader, Col, Form, Input, InputNumber, Row, Space, message } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import { flattenCategoryOptions, getCategoryTree } from '../api/category';
+import {
+  findCategoryPath,
+  getCategoryTree,
+  toCascaderOptions,
+} from '../api/category';
 
 function ProductFilterBar({ onSearch, initialValues = {}, loading }) {
   const [form] = Form.useForm();
+  const [categoryTree, setCategoryTree] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
 
   useEffect(() => {
     getCategoryTree()
-      .then((tree) => setCategoryOptions(flattenCategoryOptions(tree)))
-      .catch(() => setCategoryOptions([]));
+      .then((tree) => {
+        const data = Array.isArray(tree) ? tree : [];
+        setCategoryTree(data);
+        setCategoryOptions(toCascaderOptions(data));
+      })
+      .catch(() => {
+        setCategoryTree([]);
+        setCategoryOptions([]);
+      });
   }, []);
 
   useEffect(() => {
-    form.setFieldsValue(initialValues);
-  }, [form, initialValues]);
+    const { categoryId, ...rest } = initialValues;
+    const nextValues = { ...rest };
+    if (categoryId && categoryTree.length) {
+      nextValues.categoryPath = findCategoryPath(categoryTree, categoryId) || undefined;
+    }
+    form.setFieldsValue(nextValues);
+  }, [form, initialValues, categoryTree]);
 
   const handleFinish = (values) => {
+    if (
+      values.minPrice != null &&
+      values.maxPrice != null &&
+      values.minPrice > values.maxPrice
+    ) {
+      message.warning('最低价不能高于最高价');
+      return;
+    }
     const params = {};
     if (values.keyword?.trim()) params.keyword = values.keyword.trim();
-    if (values.categoryId) params.categoryId = values.categoryId;
+    if (values.categoryPath?.length) {
+      params.categoryId = values.categoryPath[values.categoryPath.length - 1];
+    }
     if (values.minPrice != null) params.minPrice = values.minPrice;
     if (values.maxPrice != null) params.maxPrice = values.maxPrice;
     onSearch(params);
@@ -40,13 +67,19 @@ function ProductFilterBar({ onSearch, initialValues = {}, loading }) {
           </Form.Item>
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Form.Item name="categoryId" label="分类">
-            <Select
-              allowClear
-              placeholder="全部分类"
+          <Form.Item name="categoryPath" label="分类">
+            <Cascader
               options={categoryOptions}
-              showSearch
-              optionFilterProp="label"
+              placeholder="全部分类"
+              allowClear
+              changeOnSelect
+              expandTrigger="hover"
+              showSearch={{
+                filter: (input, path) =>
+                  path.some((option) =>
+                    option.label.toLowerCase().includes(input.toLowerCase()),
+                  ),
+              }}
             />
           </Form.Item>
         </Col>

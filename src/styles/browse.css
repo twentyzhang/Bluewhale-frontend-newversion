@@ -59,3 +59,64 @@
   border-radius: 12px;
   background: #fafafa;
 }
+
+.coupon-card-body {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.coupon-card-value {
+  flex-shrink: 0;
+  width: 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6a005f 0%, #c41d7f 100%);
+  border-radius: 8px;
+  color: #fff;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.coupon-card-value-text {
+  color: #fff !important;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.coupon-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.customer-quick-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: 8px;
+  background: #fafafa;
+  transition: background 0.2s;
+  text-align: center;
+}
+
+.customer-quick-link:hover {
+  background: #f0f0f0;
+}
+
+.customer-quick-link-icon {
+  font-size: 28px;
+}
+
+.admin-quick-card {
+  height: 100%;
+}
+
+.admin-quick-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}

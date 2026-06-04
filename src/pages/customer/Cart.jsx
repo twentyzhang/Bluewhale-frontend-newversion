@@ -110,6 +110,10 @@ function Cart() {
 
   const selectableItems = cart.items.filter((item) => !isDelistedItem(item));
 
+  const selectedSubtotal = cart.items
+    .filter((item) => selectedRowKeys.includes(item.id))
+    .reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
+
   const columns = [
     {
       title: '商品',
@@ -241,8 +245,8 @@ function Cart() {
               </Space>
               <Space size="large">
                 <Text style={{ fontSize: 16 }}>
-                  合计：<Text strong style={{ fontSize: 20, color: '#c41d7f' }}>
-                    {formatPrice(cart.total)}
+                  已选合计：<Text strong style={{ fontSize: 20, color: '#c41d7f' }}>
+                    {formatPrice(selectedSubtotal)}
                   </Text>
                 </Text>
                 <Button

@@ -215,7 +215,7 @@ function Checkout() {
             />
             {coupons.length === 0 && (
               <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-                暂无可用优惠券
+                暂无可用优惠券，<Link to="/coupons">去领券</Link>
               </Text>
             )}
           </Card>

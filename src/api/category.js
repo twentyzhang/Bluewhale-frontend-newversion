@@ -4,16 +4,34 @@ export function getCategoryTree() {
   return request.get('/categories');
 }
 
-/** 将分类树展平为 Select 选项（含层级路径） */
-export function flattenCategoryOptions(tree, prefix = '') {
+export function createCategory(data) {
+  return request.post('/categories', data);
+}
+
+export function deleteCategory(categoryId) {
+  return request.delete(`/categories/${categoryId}`);
+}
+
+/** 将分类树转为 Cascader 选项 */
+export function toCascaderOptions(tree) {
   if (!Array.isArray(tree)) return [];
-  const options = [];
+  return tree.map((node) => ({
+    value: node.id,
+    label: node.name,
+    children: node.children?.length ? toCascaderOptions(node.children) : undefined,
+  }));
+}
+
+/** 根据 categoryId 在树中查找级联路径，如 [1, 3] */
+export function findCategoryPath(tree, targetId, path = []) {
+  if (!Array.isArray(tree)) return null;
   for (const node of tree) {
-    const label = prefix ? `${prefix} / ${node.name}` : node.name;
-    options.push({ value: node.id, label });
+    const nextPath = [...path, node.id];
+    if (node.id === targetId) return nextPath;
     if (node.children?.length) {
-      options.push(...flattenCategoryOptions(node.children, label));
+      const found = findCategoryPath(node.children, targetId, nextPath);
+      if (found) return found;
     }
   }
-  return options;
+  return null;
 }

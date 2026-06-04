@@ -18,7 +18,7 @@ import {
 } from 'antd';
 import { EditOutlined, HomeOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { getProductDetail } from '../../api/product';
-import { addCartItem } from '../../api/cart';
+import { addCartItem, getCart } from '../../api/cart';
 import {
   createProductReview,
   createReviewReply,
@@ -50,6 +50,7 @@ function ProductDetail() {
 
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [buying, setBuying] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -138,21 +139,26 @@ function ProductDetail() {
     }
   }, [searchParams, setSearchParams, isCustomer, hasReviewed, eligibleOrders.length]);
 
-  const handleAddToCart = async () => {
+  const ensureCustomer = () => {
     if (!isLoggedIn()) {
-      message.info('请先登录后再加入购物车');
+      message.info('请先登录');
       navigate('/login');
-      return;
+      return false;
     }
     if (role !== 'CUSTOMER') {
-      message.warning('仅顾客账号可使用购物车');
-      return;
+      message.warning('仅顾客账号可购买');
+      return false;
     }
-    if (!product?.stock || quantity < 1) return;
+    if (!product?.stock || quantity < 1) return false;
     if (quantity > product.stock) {
       message.warning(`库存不足，最多可购买 ${product.stock} 件`);
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleAddToCart = async () => {
+    if (!ensureCustomer()) return;
     setAdding(true);
     try {
       await addCartItem({ productId: Number(productId), quantity });
@@ -162,6 +168,28 @@ function ProductDetail() {
       // 错误已在拦截器提示
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!ensureCustomer()) return;
+    setBuying(true);
+    try {
+      await addCartItem({ productId: Number(productId), quantity });
+      const cartData = await getCart();
+      const item = (cartData.items || []).find(
+        (entry) => String(entry.productId) === String(productId) && !entry.productName?.includes('下架'),
+      );
+      if (!item) {
+        message.error('加入购物车失败，请重试');
+        return;
+      }
+      await refreshCart();
+      navigate('/checkout', { state: { cartItemIds: [item.id] } });
+    } catch {
+      // 错误已提示
+    } finally {
+      setBuying(false);
     }
   };
 
@@ -301,16 +329,26 @@ function ProductDetail() {
                 onChange={(val) => setQuantity(val ?? 1)}
               />
             </Space>
-            <Button
-              type="primary"
-              size="large"
-              icon={<ShoppingCartOutlined />}
-              disabled={!product.stock}
-              loading={adding}
-              onClick={handleAddToCart}
-            >
-              加入购物车
-            </Button>
+            <Space size="middle" wrap>
+              <Button
+                type="primary"
+                size="large"
+                icon={<ShoppingCartOutlined />}
+                disabled={!product.stock}
+                loading={adding}
+                onClick={handleAddToCart}
+              >
+                加入购物车
+              </Button>
+              <Button
+                size="large"
+                disabled={!product.stock}
+                loading={buying}
+                onClick={handleBuyNow}
+              >
+                立即购买
+              </Button>
+            </Space>
           </div>
         </div>
       </Card>
