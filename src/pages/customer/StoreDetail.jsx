@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Breadcrumb,
+  Button,
   Card,
   Col,
   Empty,
@@ -9,12 +10,14 @@ import {
   Pagination,
   Row,
   Spin,
+  Tag,
   Typography,
 } from 'antd';
-import { HomeOutlined } from '@ant-design/icons';
+import { HomeOutlined, MessageOutlined } from '@ant-design/icons';
 import { getStoreDetail, listStoreProducts } from '../../api/store';
 import ProductCard from '../../components/ProductCard';
 import ProductFilterBar from '../../components/ProductFilterBar';
+import { getAuth, isLoggedIn } from '../../utils/auth';
 import '../../styles/browse.css';
 
 const { Title, Text } = Typography;
@@ -105,49 +108,81 @@ function StoreDetail() {
   return (
     <div>
       <Breadcrumb
-        style={{ marginBottom: 16 }}
+        style={{ marginBottom: 20 }}
         items={[
           { title: <Link to="/"><HomeOutlined /> 首页</Link> },
           { title: store.name },
         ]}
       />
-      <Card style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+      <Card className="store-detail-hero-card" styles={{ body: { padding: 28 } }}>
+        <div className="store-detail-hero-body">
           <Image
             src={store.logo || PLACEHOLDER}
             alt={store.name}
-            width={80}
-            height={80}
-            style={{ borderRadius: 8, objectFit: 'cover' }}
+            width={120}
+            height={120}
+            className="store-detail-logo"
+            style={{ borderRadius: 16, objectFit: 'cover' }}
             fallback={PLACEHOLDER}
             preview={false}
           />
-          <div>
-            <Title level={3} style={{ marginTop: 0, marginBottom: 8 }}>
+          <div className="store-detail-info">
+            <Title level={3} className="store-detail-title">
               {store.name}
             </Title>
             {store.creditCode && (
-              <Text type="secondary">统一社会信用代码：{store.creditCode}</Text>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                统一社会信用代码：
+                <Tag color="default" style={{ marginLeft: 6, marginRight: 0 }}>
+                  {store.creditCode}
+                </Tag>
+              </Text>
             )}
           </div>
+          {isLoggedIn() && getAuth().role === 'CUSTOMER' && (
+            <Link to={`/chat/${store.id}`}>
+              <Button
+                type="primary"
+                size="large"
+                icon={<MessageOutlined />}
+                className="product-detail-action-btn product-detail-primary-btn"
+              >
+                联系客服
+              </Button>
+            </Link>
+          )}
         </div>
       </Card>
-      <Card title="店内商品" style={{ marginBottom: 16 }}>
+
+      <Card
+        styles={{
+          header: {
+            background: 'linear-gradient(135deg, rgba(106,0,95,0.04), rgba(212,177,6,0.04))',
+            borderBottom: '1px solid rgba(106,0,95,0.08)',
+          },
+          body: { padding: 20 },
+        }}
+        title={
+          <span style={{ color: 'var(--brand-700)', fontWeight: 700 }}>店内商品</span>
+        }
+        style={{ marginBottom: 20, borderRadius: 'var(--radius-lg)', border: '1px solid rgba(106,0,95,0.08)' }}
+      >
         <ProductFilterBar onSearch={handleSearch} initialValues={filters} loading={productsLoading} />
       </Card>
+
       <Spin spinning={productsLoading}>
         {products.length === 0 && !productsLoading ? (
           <Empty description="暂无商品" />
         ) : (
           <>
-            <Row gutter={[16, 16]}>
+            <Row gutter={[16, 20]}>
               {products.map((product) => (
                 <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
                   <ProductCard product={product} />
                 </Col>
               ))}
             </Row>
-            <div style={{ marginTop: 24, textAlign: 'center' }}>
+            <div style={{ marginTop: 28, textAlign: 'center' }}>
               <Pagination
                 current={page}
                 pageSize={PAGE_SIZE}

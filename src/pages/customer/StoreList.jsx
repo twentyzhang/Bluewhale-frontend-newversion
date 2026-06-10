@@ -40,33 +40,35 @@ function StoreList({ embedded = false }) {
   return (
     <div>
       {!embedded && (
-        <div className="browse-page-header">
-          <Title level={2} style={{ marginTop: 0 }}>
+        <div className="page-hero">
+          <Title level={2} className="page-hero-title">
             探索商店
           </Title>
-          <Paragraph type="secondary">
+          <Paragraph className="page-hero-subtitle">
             浏览国货品牌门店，发现优质商品。无需登录即可浏览。
           </Paragraph>
         </div>
       )}
       {embedded && (
-        <Title level={4} style={{ marginTop: 0, marginBottom: 16 }}>
-          探索商店
-        </Title>
+        <div className="section-title">
+          <Title level={4} className="section-title-text">
+            探索商店
+          </Title>
+        </div>
       )}
       <Spin spinning={loading}>
         {records.length === 0 && !loading ? (
           <Empty description="暂无商店" />
         ) : (
           <>
-            <Row gutter={[16, 16]}>
+            <Row gutter={[16, 20]}>
               {records.map((store) => (
                 <Col key={store.id} xs={24} sm={12} md={8} lg={6}>
                   <StoreCard store={store} />
                 </Col>
               ))}
             </Row>
-            <div style={{ marginTop: 24, textAlign: 'center' }}>
+            <div style={{ marginTop: 28, textAlign: 'center' }}>
               <Pagination
                 current={pagination.current}
                 pageSize={pagination.size}

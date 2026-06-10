@@ -32,7 +32,7 @@ import { fetchReviewEligibleOrders, hasUserReviewed } from '../../utils/review';
 import { getAuth, isLoggedIn } from '../../utils/auth';
 import '../../styles/browse.css';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 
 const PLACEHOLDER =
   'data:image/svg+xml,' +
@@ -264,7 +264,7 @@ function ProductDetail() {
   return (
     <div>
       <Breadcrumb
-        style={{ marginBottom: 16 }}
+        style={{ marginBottom: 20 }}
         items={[
           { title: <Link to="/"><HomeOutlined /> 首页</Link> },
           product.storeId
@@ -273,55 +273,67 @@ function ProductDetail() {
           { title: product.name },
         ].filter(Boolean)}
       />
-      <Card>
+      <Card className="product-detail-card" styles={{ body: { padding: 32 } }}>
         <div className="product-detail-layout">
-          <Image
-            src={product.imageUrl || PLACEHOLDER}
-            alt={product.name}
-            fallback={PLACEHOLDER}
-            className="product-detail-image"
-            preview={product.imageUrl ? true : false}
-          />
+          <div className="product-detail-image-wrap">
+            <Image
+              src={product.imageUrl || PLACEHOLDER}
+              alt={product.name}
+              fallback={PLACEHOLDER}
+              className="product-detail-image"
+              preview={product.imageUrl ? true : false}
+            />
+          </div>
           <div>
-            <Title level={2} style={{ marginTop: 0 }}>
+            <Title level={2} className="product-detail-title">
               {product.name}
             </Title>
-            <Paragraph>
-              <Text delete={false} style={{ fontSize: 28, color: '#c41d7f', fontWeight: 600 }}>
-                {formatPrice(product.price)}
-              </Text>
-            </Paragraph>
-            <Descriptions column={1} size="small" style={{ marginBottom: 16 }}>
+            <div className="product-detail-price">
+              <span className="product-detail-price-symbol">¥</span>
+              <span>{formatPrice(product.price).replace(/^¥/, '')}</span>
+            </div>
+            <Descriptions
+              column={1}
+              size="small"
+              className="product-detail-descriptions"
+              style={{ marginBottom: 20 }}
+              labelStyle={{ fontWeight: 500 }}
+            >
               <Descriptions.Item label="所属商店">
                 {product.storeId ? (
-                  <Link to={`/stores/${product.storeId}`}>{product.storeName}</Link>
+                  <Link to={`/stores/${product.storeId}`} style={{ color: 'var(--brand-700)' }}>
+                    {product.storeName}
+                  </Link>
                 ) : (
                   '—'
                 )}
               </Descriptions.Item>
-              <Descriptions.Item label="分类">
-                {categoryLabel || '未分类'}
-              </Descriptions.Item>
+              <Descriptions.Item label="分类">{categoryLabel || '未分类'}</Descriptions.Item>
               <Descriptions.Item label="库存">
                 {product.stock > 0 ? (
-                  <Tag color="success">{product.stock} 件</Tag>
+                  <Tag color="success" style={{ margin: 0 }}>
+                    {product.stock} 件
+                  </Tag>
                 ) : (
-                  <Tag color="default">缺货</Tag>
+                  <Tag color="default" style={{ margin: 0 }}>
+                    缺货
+                  </Tag>
                 )}
               </Descriptions.Item>
               <Descriptions.Item label="评分">
                 {product.averageRating != null ? (
-                  <span>
-                    <Rate disabled allowHalf value={Number(product.averageRating)} />{' '}
-                    {formatRating(product.averageRating)}（{product.reviewCount ?? 0} 条评价）
-                  </span>
+                  <Space size={8}>
+                    <Rate disabled allowHalf value={Number(product.averageRating)} />
+                    <Text>{formatRating(product.averageRating)}</Text>
+                    <Text type="secondary">（{product.reviewCount ?? 0} 条评价）</Text>
+                  </Space>
                 ) : (
                   <Text type="secondary">暂无评价</Text>
                 )}
               </Descriptions.Item>
             </Descriptions>
-            <Space size="middle" wrap style={{ marginBottom: 16 }}>
-              <span>数量：</span>
+            <Space size="middle" wrap style={{ marginBottom: 20 }}>
+              <span style={{ color: '#595959', fontSize: 14 }}>数量：</span>
               <InputNumber
                 min={1}
                 max={product.stock}
@@ -337,6 +349,7 @@ function ProductDetail() {
                 disabled={!product.stock}
                 loading={adding}
                 onClick={handleAddToCart}
+                className="product-detail-action-btn product-detail-primary-btn"
               >
                 加入购物车
               </Button>
@@ -345,6 +358,7 @@ function ProductDetail() {
                 disabled={!product.stock}
                 loading={buying}
                 onClick={handleBuyNow}
+                className="product-detail-action-btn product-detail-gold-btn"
               >
                 立即购买
               </Button>
@@ -353,7 +367,13 @@ function ProductDetail() {
         </div>
       </Card>
       <Card
-        title={`用户评价（${product.reviewCount ?? 0}）`}
+        className="product-detail-review-card"
+        styles={{ header: { padding: '16px 24px' }, body: { padding: 24 } }}
+        title={
+          <span style={{ color: 'var(--brand-700)', fontWeight: 700 }}>
+            用户评价（{product.reviewCount ?? 0}）
+          </span>
+        }
         style={{ marginTop: 24 }}
         extra={
           canWriteReview ? (
@@ -362,6 +382,7 @@ function ProductDetail() {
               icon={<EditOutlined />}
               loading={eligibleLoading}
               onClick={openReviewForm}
+              className="product-detail-primary-btn"
             >
               写评价
             </Button>
@@ -378,7 +399,7 @@ function ProductDetail() {
             onReply={handleReply}
           />
           {reviewPage.total > reviewPage.size && (
-            <div style={{ marginTop: 16, textAlign: 'center' }}>
+            <div style={{ marginTop: 20, textAlign: 'center' }}>
               <Pagination
                 current={reviewPage.current}
                 pageSize={reviewPage.size}

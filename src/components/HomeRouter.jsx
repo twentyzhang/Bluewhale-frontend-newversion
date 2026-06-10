@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import StoreList from '../pages/customer/StoreList';
+import ProductFeed from '../pages/customer/ProductFeed';
 import CustomerHome from '../pages/customer/CustomerHome';
 import { getAuth, isLoggedIn } from '../utils/auth';
 
@@ -16,7 +16,7 @@ function HomeRouter() {
       return <CustomerHome />;
     }
   }
-  return <StoreList />;
+  return <ProductFeed showStore />;
 }
 
 export default HomeRouter;

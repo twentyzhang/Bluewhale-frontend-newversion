@@ -1,26 +1,31 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Breadcrumb,
   Button,
   Card,
+  Descriptions,
   Empty,
   Pagination,
   Popconfirm,
   Space,
   Spin,
-  Table,
   Tabs,
   Tag,
   Typography,
   message,
 } from 'antd';
-import { HomeOutlined } from '@ant-design/icons';
+import {
+  ShoppingOutlined,
+  EyeOutlined,
+  PayCircleOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import { cancelOrder, confirmOrder, getMyOrders, payOrder } from '../../api/order';
 import { formatPrice } from '../../utils/format';
 import { getOrderStatusMeta, ORDER_STATUS_TABS } from '../../utils/orderStatus';
+import '../../styles/browse.css';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 function OrderList() {
   const navigate = useNavigate();
@@ -77,108 +82,274 @@ function OrderList() {
     }
   };
 
-  const columns = [
-    { title: '订单号', dataIndex: 'id', width: 100 },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      width: 100,
-      render: (s) => {
-        const meta = getOrderStatusMeta(s);
-        return <Tag color={meta.color}>{meta.label}</Tag>;
-      },
-    },
-    { title: '商店', dataIndex: 'storeName' },
-    { title: '商品数', dataIndex: 'itemCount', width: 80 },
-    {
-      title: '应付金额',
-      dataIndex: 'payableAmount',
-      width: 120,
-      render: formatPrice,
-    },
-    {
-      title: '下单时间',
-      dataIndex: 'createdAt',
-      width: 180,
-      render: (t) => t?.replace('T', ' '),
-    },
-    {
-      title: '操作',
-      width: 200,
-      render: (_, record) => (
-        <Space wrap size="small">
-          <Button type="link" onClick={() => navigate(`/orders/${record.id}`)}>
-            详情
-          </Button>
-          {record.status === 'PENDING_PAYMENT' && (
-            <>
-              <Button
-                type="link"
-                loading={actingId === record.id}
-                onClick={() => runAction(record.id, () => payOrder(record.id), '支付成功')}
-              >
-                支付
-              </Button>
-              <Popconfirm
-                title="确定取消订单？"
-                onConfirm={() =>
-                  runAction(record.id, () => cancelOrder(record.id), '订单已取消')
-                }
-              >
-                <Button type="link" danger loading={actingId === record.id}>
-                  取消
-                </Button>
-              </Popconfirm>
-            </>
-          )}
-          {record.status === 'SHIPPED' && (
-            <Popconfirm
-              title="确认已收到商品？"
-              onConfirm={() =>
-                runAction(record.id, () => confirmOrder(record.id), '已确认收货')
-              }
-            >
-              <Button type="link" loading={actingId === record.id}>
-                确认收货
-              </Button>
-            </Popconfirm>
-          )}
-        </Space>
-      ),
-    },
-  ];
-
   return (
     <div>
-      <Breadcrumb
-        style={{ marginBottom: 16 }}
-        items={[
-          { title: <Link to="/"><HomeOutlined /> 首页</Link> },
-          { title: '我的订单' },
-        ]}
-      />
-      <Title level={2} style={{ marginTop: 0 }}>
-        我的订单
-      </Title>
-      <Card>
-        <Tabs activeKey={status} items={ORDER_STATUS_TABS} onChange={handleTabChange} />
+      {/* Hero 标题 */}
+      <div className="page-hero" style={{ marginBottom: 28 }}>
+        <Title level={2} className="page-hero-title" style={{ margin: 0 }}>
+          <ShoppingOutlined style={{ marginRight: 12 }} />
+          我的订单
+        </Title>
+        <Text
+          className="page-hero-subtitle"
+          style={{ display: 'block', marginTop: 10, color: '#ffe58f' }}
+        >
+          查看订单状态，管理您的购物记录
+        </Text>
+      </div>
+
+      <Card
+        styles={{
+          header: { borderBottom: '1px solid rgba(106,0,95,0.08)', paddingBottom: 8, paddingTop: 8 },
+          body: { padding: '20px 0' },
+        }}
+        style={{
+          borderRadius: 16,
+          border: '1px solid rgba(106,0,95,0.08)',
+          boxShadow: '0 4px 12px rgba(106,0,95,0.06)',
+        }}
+        title={
+          <Tabs
+            activeKey={status}
+            onChange={handleTabChange}
+            items={ORDER_STATUS_TABS.map((tab) => ({
+              key: tab.key,
+              label: (
+                <span style={{ fontSize: 14, fontWeight: 600, padding: '4px 4px' }}>
+                  {tab.label}
+                </span>
+              ),
+            }))}
+            className="brand-underline-tabs"
+            size="large"
+            style={{ margin: 0 }}
+          />
+        }
+      >
         <Spin spinning={loading}>
           {records.length === 0 && !loading ? (
-            <Empty description="暂无订单">
-              <Link to="/">去逛逛</Link>
+            <Empty
+              description={<span style={{ color: '#6a005f', fontWeight: 600 }}>暂无订单</span>}
+              style={{ padding: '40px 0' }}
+            >
+              <Link to="/">
+                <Button type="primary" size="large" className="primary-gradient-btn">
+                  <ShoppingOutlined /> 去逛逛
+                </Button>
+              </Link>
             </Empty>
           ) : (
             <>
-              <Table rowKey="id" columns={columns} dataSource={records} pagination={false} />
-              <div style={{ marginTop: 16, textAlign: 'center' }}>
-                <Pagination
-                  current={page}
-                  pageSize={pageSize}
-                  total={total}
-                  showSizeChanger={false}
-                  onChange={(p) => loadOrders(p, status)}
-                />
+              <div style={{ display: 'grid', gap: 16, padding: '0 8px' }}>
+                {records.map((record) => {
+                  const statusMeta = getOrderStatusMeta(record.status);
+                  const isPending = record.status === 'PENDING_PAYMENT';
+                  const isShipped = record.status === 'SHIPPED';
+                  return (
+                    <Card
+                      key={record.id}
+                      styles={{
+                        body: { padding: 0 },
+                      }}
+                      style={{
+                        borderRadius: 12,
+                        border: '1px solid rgba(106,0,95,0.08)',
+                        boxShadow: '0 2px 8px rgba(106,0,95,0.04)',
+                        transition: 'all 0.2s ease',
+                      }}
+                      hoverable
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 6px 16px rgba(106,0,95,0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(106,0,95,0.04)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: '14px 20px',
+                          background: 'linear-gradient(90deg, rgba(106,0,95,0.04), rgba(212,177,6,0.03))',
+                          borderBottom: '1px dashed rgba(106,0,95,0.08)',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: 12,
+                        }}
+                      >
+                        <Space size={16} wrap>
+                          <Text style={{ color: '#595959', fontSize: 13 }}>
+                            订单号：
+                          </Text>
+                          <Text strong style={{ color: '#1f1f1f', fontSize: 14 }}>
+                            #{record.id}
+                          </Text>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {record.createdAt?.replace('T', ' ')}
+                          </Text>
+                          {record.storeName && (
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              店铺：{record.storeName}
+                            </Text>
+                          )}
+                        </Space>
+                        <Tag
+                          color={statusMeta.color}
+                          style={{
+                            margin: 0,
+                            fontWeight: 600,
+                            padding: '4px 14px',
+                            fontSize: 13,
+                          }}
+                        >
+                          {statusMeta.label}
+                        </Tag>
+                      </div>
+
+                      <div style={{ padding: '16px 20px' }}>
+                        <Descriptions
+                          column={3}
+                          size="small"
+                          labelStyle={{ color: '#8c8c8c', padding: '4px 0', width: 70 }}
+                          contentStyle={{ color: '#1f1f1f', padding: '4px 0' }}
+                          style={{ marginBottom: 14 }}
+                        >
+                          <Descriptions.Item label="商品数">
+                            <Text strong>{record.itemCount || 0} 件</Text>
+                          </Descriptions.Item>
+                          <Descriptions.Item label="应付金额">
+                            <Text strong style={{ color: '#c9a227', fontSize: 16 }}>
+                              {formatPrice(record.payableAmount)}
+                            </Text>
+                          </Descriptions.Item>
+                          <Descriptions.Item label="下单时间">
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              {record.createdAt?.replace('T', ' ')}
+                            </Text>
+                          </Descriptions.Item>
+                        </Descriptions>
+
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 10,
+                            paddingTop: 12,
+                            borderTop: '1px dashed rgba(106,0,95,0.06)',
+                          }}
+                        >
+                          <Button
+                            size="middle"
+                            className="ghost-secondary-btn"
+                            onClick={() => navigate(`/orders/${record.id}`)}
+                          >
+                            <EyeOutlined /> 详情
+                          </Button>
+                          {isPending && (
+                            <>
+                              <Button
+                                type="primary"
+                                size="middle"
+                                className="primary-gradient-btn"
+                                loading={actingId === record.id}
+                                onClick={() =>
+                                  runAction(record.id, () => payOrder(record.id), '支付成功')
+                                }
+                              >
+                                <PayCircleOutlined /> 立即支付
+                              </Button>
+                              <Popconfirm
+                                title="确定取消订单？"
+                                okText="确认"
+                                cancelText="取消"
+                                okButtonProps={{
+                                  style: {
+                                    background: 'linear-gradient(135deg, #6a005f, #9b4d94)',
+                                    border: 'none',
+                                  },
+                                }}
+                                onConfirm={() =>
+                                  runAction(record.id, () => cancelOrder(record.id), '订单已取消')
+                                }
+                              >
+                                <Button
+                                  size="middle"
+                                  danger
+                                  loading={actingId === record.id}
+                                >
+                                  取消订单
+                                </Button>
+                              </Popconfirm>
+                            </>
+                          )}
+                          {isShipped && (
+                            <Popconfirm
+                              title="确认已收到商品？"
+                              okText="确认收货"
+                              cancelText="取消"
+                              okButtonProps={{
+                                style: {
+                                  background: 'linear-gradient(135deg, #c9a227, #d4b106)',
+                                  border: 'none',
+                                },
+                              }}
+                              onConfirm={() =>
+                                runAction(record.id, () => confirmOrder(record.id), '已确认收货')
+                              }
+                            >
+                              <Button
+                                type="primary"
+                                size="middle"
+                                className="primary-gradient-btn"
+                                loading={actingId === record.id}
+                                style={{
+                                  background: 'linear-gradient(135deg, #c9a227, #d4b106) !important',
+                                }}
+                              >
+                                <CheckCircleOutlined /> 确认收货
+                              </Button>
+                            </Popconfirm>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
+
+              {/* 分页 */}
+              {total > 0 && (
+                <div style={{ marginTop: 28, textAlign: 'center' }}>
+                  <Pagination
+                    current={page}
+                    pageSize={pageSize}
+                    total={total}
+                    showSizeChanger={false}
+                    onChange={(p) => loadOrders(p, status)}
+                    itemRender={(pageNum, type, original) => {
+                      if (type === 'page') {
+                        return (
+                          <span
+                            style={{
+                              color: pageNum === page ? '#fff' : '#6a005f',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {pageNum}
+                          </span>
+                        );
+                      }
+                      return original;
+                    }}
+                    style={{
+                      '--ant-primary-color': '#6a005f',
+                      '--ant-primary-color-hover': '#9b4d94',
+                    }}
+                  />
+                </div>
+              )}
             </>
           )}
         </Spin>
