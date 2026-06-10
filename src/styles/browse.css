@@ -14,12 +14,15 @@
 .page-hero {
   background: linear-gradient(135deg, #6a005f 0%, #9b4d94 55%, #c9a227 100%);
   border-radius: var(--radius-lg);
-  padding: 40px 32px;
+  padding: 48px 48px;
   color: #fff;
   box-shadow: var(--shadow-lg);
-  margin-bottom: 28px;
+  margin-bottom: 32px;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  display: block;
 }
 
 .page-hero::after {
@@ -83,12 +86,22 @@
   transition: all 0.25s ease;
   border: 1px solid rgba(106,0,95,0.08);
   background: #fff !important;
+  width: 100% !important;
 }
 
 .store-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
   border-color: rgba(106,0,95,0.15);
+}
+
+.store-card .ant-card-body {
+  padding: 16px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 12px !important;
+  align-items: center !important;
+  width: 100% !important;
 }
 
 .store-detail-hero-card {
