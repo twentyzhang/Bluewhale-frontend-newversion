@@ -12,48 +12,33 @@ const PLACEHOLDER =
 
 function StoreCard({ store }) {
   return (
-    <Link to={`/stores/${store.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+    <Link to={`/stores/${store.id}`} style={{ textDecoration: 'none', display: 'block', width: '100%' }}>
       <Card
         hoverable
         className="store-card"
-        styles={{
-          body: {
-            padding: '20px 22px',
-            display: 'flex',
-            gap: 16,
-            alignItems: 'center',
-          },
+        bodyStyle={{
+          padding: '16px',
+          display: 'flex',
+          gap: 12,
+          alignItems: 'center',
         }}
         style={{
-          borderRadius: 14,
+          borderRadius: 12,
           border: '1px solid rgba(106,0,95,0.08)',
           boxShadow: '0 2px 8px rgba(106,0,95,0.04)',
           transition: 'all 0.25s ease',
           background: '#fff',
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-4px)';
-          e.currentTarget.style.boxShadow = '0 12px 28px rgba(106,0,95,0.15)';
-          e.currentTarget.style.border = '1px solid transparent';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'none';
-          e.currentTarget.style.boxShadow = '0 2px 8px rgba(106,0,95,0.04)';
-          e.currentTarget.style.border = '1px solid rgba(106,0,95,0.08)';
-        }}
       >
         <div
           style={{
-            width: 72,
-            height: 72,
+            width: 64,
+            height: 64,
             flexShrink: 0,
-            borderRadius: 12,
+            borderRadius: 10,
             overflow: 'hidden',
-            boxShadow: '0 4px 12px rgba(106,0,95,0.12)',
+            boxShadow: '0 4px 12px rgba(106,0,95,0.1)',
             background: 'linear-gradient(135deg, rgba(106,0,95,0.08), rgba(212,177,6,0.08))',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
           }}
         >
           <Image
@@ -69,37 +54,22 @@ function StoreCard({ store }) {
             strong
             ellipsis={{ rows: 2 }}
             style={{
-              marginBottom: 8,
+              marginBottom: 6,
               color: '#1f1f1f',
-              fontSize: 16,
-              fontWeight: 700,
-              letterSpacing: 0.3,
+              fontSize: 15,
+              fontWeight: 600,
+              letterSpacing: 0.2,
               lineHeight: 1.4,
             }}
           >
             {store.name}
           </Paragraph>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <ShopOutlined style={{ color: '#9b4d94', fontSize: 14 }} />
-            <Text style={{ color: '#595959', fontSize: 13, fontWeight: 500 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <ShopOutlined style={{ color: '#9b4d94', fontSize: 12 }} />
+            <Text style={{ color: '#666', fontSize: 12 }}>
               {store.productCount ?? 0} 件商品
             </Text>
           </div>
-        </div>
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #6a005f, #d4b106)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            boxShadow: '0 2px 8px rgba(106,0,95,0.2)',
-          }}
-        >
-          <span style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>→</span>
         </div>
       </Card>
     </Link>

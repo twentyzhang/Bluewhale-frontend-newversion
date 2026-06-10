@@ -80,14 +80,15 @@
 .store-card {
   border-radius: var(--radius-md) !important;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: all 0.25s ease;
   border: 1px solid rgba(106,0,95,0.08);
+  background: #fff !important;
 }
 
 .store-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: transparent;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(106,0,95,0.15);
 }
 
 .store-detail-hero-card {
