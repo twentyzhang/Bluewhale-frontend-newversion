@@ -5,12 +5,11 @@ import { LockOutlined, MobileOutlined } from '@ant-design/icons';
 import { login } from '../../api/auth';
 import { getMe } from '../../api/user';
 import { saveAuth, getHomePathByRole } from '../../utils/auth';
+import { PHONE_RULE } from '../../utils/phone';
 import AuthLayout from '../../layouts/AuthLayout';
 import '../../styles/auth.css';
 
 const { Text } = Typography;
-
-const PHONE_RULE = { pattern: /^1\d{10}$/, message: '请输入11位手机号' };
 
 function Login() {
   const [loading, setLoading] = useState(false);
@@ -51,7 +50,7 @@ function Login() {
   };
 
   return (
-    <AuthLayout title="欢迎回来" subtitle="使用手机号登录您的账号">
+    <AuthLayout title="欢迎回来" subtitle="登录您的账号，开启国货购物之旅">
       <Form
         name="login"
         layout="vertical"
@@ -66,7 +65,7 @@ function Login() {
         >
           <Input
             prefix={<MobileOutlined style={{ color: '#9b4d94' }} />}
-            placeholder="11位手机号"
+            placeholder="请输入手机号"
             maxLength={11}
           />
         </Form.Item>

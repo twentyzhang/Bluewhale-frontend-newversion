@@ -19,9 +19,9 @@ import {
 } from '../../api/coupon';
 import CouponGroupFormModal from '../../components/CouponGroupFormModal';
 import { formatCouponValue } from '../../utils/format';
-import { formatCouponType } from '../../utils/couponStatus';
+import { formatCouponType, formatCouponMinOrder } from '../../utils/couponStatus';
 
-const { Title } = Typography;
+const { Text, Title } = Typography;
 const PAGE_SIZE = 10;
 
 function AdminCouponList() {
@@ -106,7 +106,7 @@ function AdminCouponList() {
       title: '门槛',
       dataIndex: 'minOrderAmount',
       width: 100,
-      render: (val) => `满 ${Number(val).toFixed(2)} 元`,
+      render: (_, record) => formatCouponMinOrder(record),
     },
     {
       title: '剩余',

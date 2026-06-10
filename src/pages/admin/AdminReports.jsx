@@ -12,13 +12,15 @@ import {
   Typography,
   message,
 } from 'antd';
-import { getAdminOrderReport } from '../../api/report';
+import { DownloadOutlined } from '@ant-design/icons';
+import { exportAdminOrderReport, getAdminOrderReport } from '../../api/report';
 import { formatPrice } from '../../utils/format';
 
 const { Title, Text } = Typography;
 
 function AdminReports() {
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [report, setReport] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -48,6 +50,27 @@ function AdminReports() {
       return;
     }
     loadReport({ startDate: startDate || undefined, endDate: endDate || undefined });
+  };
+
+  const buildDateParams = () => ({
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
+  });
+
+  const handleExport = async () => {
+    if (startDate && endDate && startDate > endDate) {
+      message.warning('起始日期不能晚于截止日期');
+      return;
+    }
+    setExporting(true);
+    try {
+      await exportAdminOrderReport(buildDateParams());
+      message.success('报表已导出');
+    } catch {
+      // 错误已提示
+    } finally {
+      setExporting(false);
+    }
   };
 
   const storeColumns = [
@@ -107,6 +130,9 @@ function AdminReports() {
           />
           <Button type="primary" onClick={handleSearch}>
             查询
+          </Button>
+          <Button icon={<DownloadOutlined />} loading={exporting} onClick={handleExport}>
+            导出 Excel
           </Button>
           <Button
             onClick={() => {

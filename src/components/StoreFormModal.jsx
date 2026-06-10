@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Form, Input, Modal } from 'antd';
 
-const PHONE_RULE = { pattern: /^1\d{10}$/, message: '请输入11位手机号' };
+import { PHONE_RULE } from '../utils/phone';
 
 function StoreFormModal({ open, title, initialValues, confirmLoading, onCancel, onSubmit, mode }) {
   const [form] = Form.useForm();

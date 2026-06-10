@@ -13,7 +13,8 @@ import {
   Typography,
   message,
 } from 'antd';
-import { getStoreOrderReport } from '../../api/report';
+import { DownloadOutlined } from '@ant-design/icons';
+import { exportStoreOrderReport, getStoreOrderReport } from '../../api/report';
 import StaffStoreGuard from '../../components/StaffStoreGuard';
 import { useStaffStoreId } from '../../hooks/useStaffStore';
 import { formatPrice } from '../../utils/format';
@@ -24,6 +25,7 @@ const { Title, Text } = Typography;
 function StaffReports() {
   const storeId = useStaffStoreId();
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [report, setReport] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -57,6 +59,26 @@ function StaffReports() {
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     });
+  };
+
+  const handleExport = async () => {
+    if (!storeId) return;
+    if (startDate && endDate && startDate > endDate) {
+      message.warning('起始日期不能晚于截止日期');
+      return;
+    }
+    setExporting(true);
+    try {
+      await exportStoreOrderReport(storeId, {
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+      });
+      message.success('报表已导出');
+    } catch {
+      // 错误已提示
+    } finally {
+      setExporting(false);
+    }
   };
 
   const dailyColumns = [
@@ -107,6 +129,9 @@ function StaffReports() {
           />
           <Button type="primary" onClick={handleSearch}>
             查询
+          </Button>
+          <Button icon={<DownloadOutlined />} loading={exporting} onClick={handleExport}>
+            导出 Excel
           </Button>
           <Button
             onClick={() => {
