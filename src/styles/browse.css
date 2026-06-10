@@ -81,33 +81,13 @@
   border-radius: var(--radius-md) !important;
   box-shadow: var(--shadow-sm);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
-  border: 1px solid #f0f0f0;
+  border: 1px solid rgba(106,0,95,0.08);
 }
 
 .store-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
   border-color: transparent;
-}
-
-.store-card .store-card-body {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.store-card-logo {
-  width: 72px !important;
-  height: 72px !important;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-  flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
-}
-
-.store-card-info {
-  flex: 1;
-  min-width: 0;
 }
 
 .store-detail-hero-card {

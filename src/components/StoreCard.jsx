@@ -15,9 +15,13 @@ function StoreCard({ store }) {
     <Link to={`/stores/${store.id}`} style={{ textDecoration: 'none', display: 'block' }}>
       <Card
         hoverable
+        className="store-card"
         styles={{
           body: {
             padding: '20px 22px',
+            display: 'flex',
+            gap: 16,
+            alignItems: 'center',
           },
         }}
         style={{
@@ -38,68 +42,64 @@ function StoreCard({ store }) {
           e.currentTarget.style.border = '1px solid rgba(106,0,95,0.08)';
         }}
       >
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          <div
+        <div
+          style={{
+            width: 72,
+            height: 72,
+            flexShrink: 0,
+            borderRadius: 12,
+            overflow: 'hidden',
+            boxShadow: '0 4px 12px rgba(106,0,95,0.12)',
+            background: 'linear-gradient(135deg, rgba(106,0,95,0.08), rgba(212,177,6,0.08))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Image
+            src={store.logo || PLACEHOLDER}
+            alt={store.name}
+            fallback={PLACEHOLDER}
+            preview={false}
+            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Paragraph
+            strong
+            ellipsis={{ rows: 2 }}
             style={{
-              width: 72,
-              height: 72,
-              flexShrink: 0,
-              borderRadius: 12,
-              overflow: 'hidden',
-              boxShadow: '0 4px 12px rgba(106,0,95,0.12)',
-              background: 'linear-gradient(135deg, rgba(106,0,95,0.08), rgba(212,177,6,0.08))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              marginBottom: 8,
+              color: '#1f1f1f',
+              fontSize: 16,
+              fontWeight: 700,
+              letterSpacing: 0.3,
+              lineHeight: 1.4,
             }}
           >
-            <Image
-              src={store.logo || PLACEHOLDER}
-              alt={store.name}
-              fallback={PLACEHOLDER}
-              preview={false}
-              width={72}
-              height={72}
-              style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-            />
+            {store.name}
+          </Paragraph>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <ShopOutlined style={{ color: '#9b4d94', fontSize: 14 }} />
+            <Text style={{ color: '#595959', fontSize: 13, fontWeight: 500 }}>
+              {store.productCount ?? 0} 件商品
+            </Text>
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <Paragraph
-              strong
-              ellipsis={{ rows: 2 }}
-              style={{
-                marginBottom: 8,
-                color: '#1f1f1f',
-                fontSize: 16,
-                fontWeight: 700,
-                letterSpacing: 0.3,
-                lineHeight: 1.4,
-              }}
-            >
-              {store.name}
-            </Paragraph>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <ShopOutlined style={{ color: '#9b4d94', fontSize: 14 }} />
-              <Text style={{ color: '#595959', fontSize: 13, fontWeight: 500 }}>
-                {store.productCount ?? 0} 件商品
-              </Text>
-            </div>
-          </div>
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #6a005f, #d4b106)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(106,0,95,0.2)',
-            }}
-          >
-            <span style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>→</span>
-          </div>
+        </div>
+        <div
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #6a005f, #d4b106)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(106,0,95,0.2)',
+          }}
+        >
+          <span style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>→</span>
         </div>
       </Card>
     </Link>

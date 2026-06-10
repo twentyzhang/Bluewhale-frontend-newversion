@@ -103,7 +103,7 @@ function ProductFilterBar({
             </Col>
           </>
         )}
-        <Col xs={24} md={mode === 'stores' ? 8 : 2}>
+        <Col xs={24} sm={12} md={mode === 'stores' ? 8 : 6}>
           <Form.Item label=" ">
             <Space>
               <Button type="primary" htmlType="submit" loading={loading}>
