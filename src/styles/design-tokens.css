@@ -1,0 +1,143 @@
+/* =========================================================
+ * 南鲸商城 · 设计系统 Design Tokens
+ * 主题：紫金（南大紫 + 暖金点缀 + 柔和中性灰
+ * ========================================================= */
+
+:root {
+  /* ========== 主题色 ========== */
+  --brand-50: #faf5fb;
+  --brand-100: #f3e9f5;
+  --brand-200: #e6d3ea;
+  --brand-300: #d1b0d8;
+  --brand-400: #b67fc0;
+  --brand-500: #9b4d94; /* 品牌主色 */
+  --brand-600: #7e3d87;
+  --brand-700: #6a005f; /* 南大紫 */
+  --brand-800: #52004a;
+  --brand-900: #3d0045;
+
+  /* ========== 金 / 强调色 ========== */
+  --gold-100: #fef7e0;
+  --gold-300: #f5e090;
+  --gold-500: #d4b106; /* 暖金 */
+  --gold-600: #c9a227;
+  --gold-700: #b08900;
+
+  /* ========== 语义色 ========== */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+
+  /* ========== 中性色 ========== */
+  --neutral-0: #ffffff;
+  --neutral-50: #fafafa;
+  --neutral-100: #f4f4f5;
+  --neutral-200: #e4e4e7;
+  --neutral-300: #d4d4d8;
+  --neutral-400: #a1a1aa;
+  --neutral-500: #71717a;
+  --neutral-600: #52525b;
+  --neutral-700: #3f3f46;
+  --neutral-800: #27272a;
+  --neutral-900: #18181b;
+
+  /* ========== 文字色 ========== */
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-muted: var(--neutral-400);
+  --text-inverse: #ffffff;
+
+  /* ========== 背景色 ========== */
+  --bg-page: #f7f5fa;
+  --bg-surface: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-muted: var(--neutral-50);
+
+  /* ========== 边框与阴影 ========== */
+  --border-color: var(--neutral-200);
+  --border-color-strong: var(--neutral-300);
+  --shadow-xs: 0 1px 2px rgba(24, 24, 27, 0.05);
+  --shadow-sm: 0 1px 3px rgba(24, 24, 27, 0.08), 0 1px 2px rgba(24, 24, 27, 0.04);
+  --shadow-md: 0 4px 12px rgba(24, 24, 27, 0.08);
+  --shadow-lg: 0 10px 24px rgba(24, 24, 27, 0.1);
+  --shadow-xl: 0 20px 48px rgba(106, 0, 95, 0.15);
+  --shadow-brand: 0 8px 24px rgba(106, 0, 95, 0.25);
+
+  /* ========== 圆角 ========== */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 9999px;
+
+  /* ========== 间距（8 点网格 ========== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ========== 排版 ========== */
+  --font-sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
+
+  /* ========== 过渡 ========== */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --transition-fast: 150ms var(--ease-out);
+  --transition-base: 250ms var(--ease-out);
+  --transition-slow: 400ms var(--ease-out);
+
+  /* ========== 全局容器 ========== */
+  --container-max: 1200px;
+  --container-narrow: 960px;
+  --header-height: 64px;
+  --content-padding: 24px;
+}
+
+/* ========== 暗色模式（预留） ========== */
+[data-theme="dark"] {
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --bg-page: #18181b;
+  --bg-surface: #27272a;
+  --border-color: #3f3f46;
+}
+
+/* ========== 滚动条美化 ========== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand-300) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--neutral-300);
+  border-radius: var(--radius-pill);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-500);
+}
+
+/* ========== 选择文本 ========== */
+::selection {
+  background: var(--brand-200);
+  color: var(--brand-900);
+}

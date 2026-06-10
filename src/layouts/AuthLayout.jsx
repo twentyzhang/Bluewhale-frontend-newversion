@@ -4,6 +4,8 @@ import {
   GiftOutlined,
   SafetyCertificateOutlined,
   ShopOutlined,
+  TeamOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 
 const { Title, Paragraph, Text } = Typography;
@@ -42,7 +44,7 @@ function AuthLayout({ title, subtitle, children }) {
             </div>
           </div>
           <Paragraph className="auth-brand-desc">
-            汇聚优质国货品牌，从浏览、下单到门店履约，提供一站式购物体验。
+            汇聚优质国货品牌，从浏览、下单到门店履约，为顾客、门店员工与管理员提供一站式购物与运营体验。
           </Paragraph>
           <ul className="auth-features">
             <li>
@@ -57,11 +59,23 @@ function AuthLayout({ title, subtitle, children }) {
               <SafetyCertificateOutlined />
               <span>安全便捷的账号体系</span>
             </li>
+            <li>
+              <TeamOutlined />
+              <span>门店员工工作台</span>
+            </li>
+            <li>
+              <SettingOutlined />
+              <span>管理员总览与配置</span>
+            </li>
           </ul>
+          <Text className="auth-brand-copyright">© 南鲸商城 · 紫金品牌设计</Text>
         </div>
       </div>
       <div className="auth-panel">
         <div className="auth-form-wrap">
+          <div className="auth-form-logo">
+            <span className="auth-form-logo-mark">鲸</span>
+          </div>
           <div className="auth-form-header">
             <Title level={3} className="auth-form-title">
               {title}

@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Layout, Menu, Typography } from 'antd';
+import { Layout, Menu } from 'antd';
 import {
   AppstoreOutlined,
   BarChartOutlined,
@@ -10,7 +10,6 @@ import {
 } from '@ant-design/icons';
 
 const { Sider, Content } = Layout;
-const { Title } = Typography;
 
 const MENU_ITEMS = [
   { key: '/admin', icon: <HomeOutlined />, label: <Link to="/admin">控制台</Link> },
@@ -49,21 +48,21 @@ function AdminLayout() {
   const selectedKey = getAdminSelectedKey(location.pathname);
 
   return (
-    <Layout style={{ background: 'transparent', minHeight: 'calc(100vh - 112px)' }}>
-      <Sider
-        width={220}
-        breakpoint="lg"
-        collapsedWidth={0}
-        style={{ background: '#fff', borderRadius: 8, marginRight: 16 }}
-      >
-        <div style={{ padding: '16px 16px 8px' }}>
-          <Title level={5} style={{ margin: 0 }}>
-            管理后台
-          </Title>
+    <Layout className="workbench-layout">
+      <Sider className="purple-gold-sider" width={240} breakpoint="lg" collapsedWidth={0}>
+        <div className="sider-header">
+          <h3 className="sider-header__title">管理后台</h3>
+          <p className="sider-header__subtitle">南鲸商城 · 超级管理员</p>
         </div>
-        <Menu mode="inline" selectedKeys={[selectedKey]} items={MENU_ITEMS} />
+        <Menu
+          className="admin-sider-menu"
+          mode="inline"
+          selectedKeys={[selectedKey]}
+          items={MENU_ITEMS}
+        />
+        <div className="sider-footer">南鲸商城 · v1.0</div>
       </Sider>
-      <Content style={{ minWidth: 0 }}>
+      <Content className="workbench-content">
         <Outlet />
       </Content>
     </Layout>

@@ -1,17 +1,17 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Layout, Menu, Typography } from 'antd';
+import { Layout, Menu } from 'antd';
 import {
   AppstoreOutlined,
   BarChartOutlined,
   GiftOutlined,
   HomeOutlined,
+  MessageOutlined,
   ShoppingOutlined,
   TagsOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
 
 const { Sider, Content } = Layout;
-const { Title } = Typography;
 
 const MENU_ITEMS = [
   { key: '/staff', icon: <HomeOutlined />, label: <Link to="/staff">工作台</Link> },
@@ -34,6 +34,11 @@ const MENU_ITEMS = [
     key: '/staff/coupons',
     icon: <GiftOutlined />,
     label: <Link to="/staff/coupons">店铺优惠券</Link>,
+  },
+  {
+    key: '/staff/chat',
+    icon: <MessageOutlined />,
+    label: <Link to="/staff/chat">在线客服</Link>,
   },
   {
     key: '/staff/reports',
@@ -59,21 +64,21 @@ function StaffLayout() {
   const selectedKey = getStaffSelectedKey(location.pathname);
 
   return (
-    <Layout style={{ background: 'transparent', minHeight: 'calc(100vh - 112px)' }}>
-      <Sider
-        width={220}
-        breakpoint="lg"
-        collapsedWidth={0}
-        style={{ background: '#fff', borderRadius: 8, marginRight: 16 }}
-      >
-        <div style={{ padding: '16px 16px 8px' }}>
-          <Title level={5} style={{ margin: 0 }}>
-            门店工作台
-          </Title>
+    <Layout className="workbench-layout">
+      <Sider className="purple-gold-sider" width={240} breakpoint="lg" collapsedWidth={0}>
+        <div className="sider-header">
+          <h3 className="sider-header__title">门店工作台</h3>
+          <p className="sider-header__subtitle">南鲸商城 · 门店管理中心</p>
         </div>
-        <Menu mode="inline" selectedKeys={[selectedKey]} items={MENU_ITEMS} />
+        <Menu
+          className="staff-sider-menu"
+          mode="inline"
+          selectedKeys={[selectedKey]}
+          items={MENU_ITEMS}
+        />
+        <div className="sider-footer">南鲸商城 · v1.0</div>
       </Sider>
-      <Content style={{ minWidth: 0 }}>
+      <Content className="workbench-content">
         <Outlet />
       </Content>
     </Layout>
