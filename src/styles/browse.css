@@ -58,6 +58,14 @@
   margin-bottom: 24px;
 }
 
+.store-list-page {
+  width: 100%;
+}
+
+.store-list-page .ant-row {
+  width: 100%;
+}
+
 .section-title {
   display: flex;
   align-items: center;

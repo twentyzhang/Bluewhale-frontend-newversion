@@ -283,10 +283,14 @@ a:hover { color: var(--brand-500); }
 }
 
 .app-content {
+  /* 固定占满可用宽度，避免 flex + margin:auto 按子内容收缩（商店页等窄内容会挤到右侧） */
+  width: 100%;
   max-width: var(--container-max);
   margin-inline: auto;
   padding: var(--space-6);
   min-height: calc(100vh - var(--header-height));
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 @media (max-width: 900px) {

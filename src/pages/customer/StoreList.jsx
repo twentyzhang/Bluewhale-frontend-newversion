@@ -38,7 +38,7 @@ function StoreList({ embedded = false }) {
   }, []);
 
   return (
-    <div>
+    <div className="store-list-page">
       {!embedded && (
         <div className="page-hero">
           <Title level={2} className="page-hero-title">
