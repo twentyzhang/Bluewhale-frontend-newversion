@@ -1,3 +1,5 @@
+import { formatCouponMinOrder } from './couponStatus';
+
 export function formatPrice(value) {
   if (value == null || Number.isNaN(Number(value))) return '—';
   return `¥${Number(value).toFixed(2)}`;
@@ -19,8 +21,7 @@ export function formatCouponValue(coupon) {
 export function formatCouponLabel(coupon) {
   if (!coupon) return '';
   const name = coupon.groupName || coupon.name || '优惠券';
-  const min = Number(coupon.minOrderAmount).toFixed(2);
-  return `${name}（${formatCouponValue(coupon)}，满${min}元可用）`;
+  return `${name}（${formatCouponValue(coupon)}，${formatCouponMinOrder(coupon)}）`;
 }
 
 export function formatAddress(addr) {

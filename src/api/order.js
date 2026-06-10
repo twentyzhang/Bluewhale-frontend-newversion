@@ -4,6 +4,10 @@ export function createOrder(data) {
   return request.post('/orders', data);
 }
 
+export function previewOrderCoupons(data) {
+  return request.post('/orders/coupon-preview', data);
+}
+
 export function getMyOrders(params) {
   return request.get('/orders', { params });
 }

@@ -24,6 +24,7 @@ import AdminCouponList from '../pages/admin/AdminCouponList';
 import AdminCategoryList from '../pages/admin/AdminCategoryList';
 import AdminReports from '../pages/admin/AdminReports';
 import StoreDetail from '../pages/customer/StoreDetail';
+import StoreList from '../pages/customer/StoreList';
 import ProductDetail from '../pages/customer/ProductDetail';
 import SearchProducts from '../pages/customer/SearchProducts';
 import Cart from '../pages/customer/Cart';
@@ -31,7 +32,9 @@ import Checkout from '../pages/customer/Checkout';
 import OrderList from '../pages/customer/OrderList';
 import OrderDetail from '../pages/customer/OrderDetail';
 import CouponGroupList from '../pages/customer/CouponGroupList';
+import CustomerChat from '../pages/customer/CustomerChat';
 import MyCoupons from '../pages/customer/MyCoupons';
+import StaffChat from '../pages/staff/StaffChat';
 
 const router = createBrowserRouter([
   {
@@ -60,6 +63,10 @@ const router = createBrowserRouter([
       {
         path: 'search',
         element: <SearchProducts />,
+      },
+      {
+        path: 'stores',
+        element: <StoreList />,
       },
       {
         path: 'stores/:storeId',
@@ -140,6 +147,26 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'chat',
+        element: (
+          <ProtectedRoute>
+            <RequireRole roles={['CUSTOMER']}>
+              <CustomerChat />
+            </RequireRole>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'chat/:storeId',
+        element: (
+          <ProtectedRoute>
+            <RequireRole roles={['CUSTOMER']}>
+              <CustomerChat />
+            </RequireRole>
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: 'coupons',
         element: <CouponGroupList />,
       },
@@ -170,6 +197,7 @@ const router = createBrowserRouter([
           { path: 'orders/:orderId', element: <StaffOrderDetail /> },
           { path: 'coupons', element: <StaffCouponList /> },
           { path: 'reports', element: <StaffReports /> },
+          { path: 'chat', element: <StaffChat /> },
         ],
       },
       {
