@@ -2,7 +2,39 @@
 
 > 本文档面向前端开发，描述后端已实现接口的调用方式、鉴权流程、错误处理、枚举值与本地启动方法。
 > 接口的完整字段定义以 [`api-spec.md`](./api-spec.md) 为准，本文档侧重「前端怎么用」。
-> 最后更新：2026-06-03（含 `POST /api/auth/refresh` 刷新接口）。
+> 最后更新：2026-06-09（任务 7 实时客服 WebSocket + STOMP）。
+
+---
+
+## 0. 最近接口变更（前端需重点调整）
+
+> 本次更新（任务 7 实时客服）含 **0 处破坏性变更** 和 **1 个新模块**。下表为速览，细节见模块十一。
+
+### 🆕 新增能力（任务 7）
+
+| # | 新增 | 接口/协议 | 说明 |
+|---|---|---|---|
+| 6 | **实时客服 REST** | `GET/POST /api/chat/**` | 会话列表（角色感知）、历史游标分页、接入、释放 |
+| 7 | **实时客服 WebSocket** | `ws://host:8080/ws`（STOMP） | 买家/客服实时发消息；客服订阅店铺主题获取新消息和接入/释放通知；JWT 在 CONNECT 帧鉴权 |
+
+---
+
+> 历史变更（任务 4 报表导出、任务 5 多优惠券叠加）含 **2 处破坏性变更** 和 **3 项新增**。下表为速览，细节见对应模块（订单=模块五、优惠券=模块八、报表=模块十）。
+
+### ⚠️ 破坏性变更（必须改，否则功能异常）
+
+| # | 变更 | 影响接口 | 前端要做什么 |
+|---|---|---|---|
+| 1 | **优惠券类型枚举调整**：原 `AMOUNT_OFF` **拆分为** `FULL_REDUCTION`（满减，有门槛）和 `DIRECT_OFF`（直减，无门槛） | 所有读写券 `type` 的接口：可领券列表、我的优惠券、发布店铺/全局券 | ① 更新 type→文案映射，**删除 `AMOUNT_OFF`**，新增 `FULL_REDUCTION`/`DIRECT_OFF` 两个展示；② 发布券表单的「类型」选项由 2 项改 3 项；③ 满减必须带 `minOrderAmount>0`，直减必须 `minOrderAmount=0`（前端做对应表单校验，否则后端 400） |
+| 2 | **下单改为多券**：`POST /api/orders` 请求体 `couponId`（单个 `long`）→ `couponIds`（`long[]` 数组） | 创建订单 | 改字段名与类型；不用券时传 `[]` 或不传。选券 UI 支持多选（受下方叠加规则约束） |
+
+### 🆕 新增能力
+
+| # | 新增 | 接口 | 说明 |
+|---|---|---|---|
+| 3 | **优惠券试算** | `POST /api/orders/coupon-preview` | 下单前预览「最优能省多少」，结算页选券时实时调用；不创建订单、不核销券 |
+| 4 | **多券叠加规则** | 下单 / 试算 | **同类型最多 1 张、不同类型可叠加**（折扣 + 满减 + 直减 各 1 张，最多 3 张）。后台自动按最优顺序计价取**最大折扣**，前端只需把选中的券 ID 全部放进 `couponIds`，无需关心计算顺序 |
+| 5 | **报表导出 Excel** | `GET /api/stores/{storeId}/reports/orders/export`、`GET /api/admin/reports/orders/export` | 返回 **xlsx 二进制流（非 JSON）**，需用 blob 方式下载，**不要走统一 JSON 拦截器**（见模块十说明） |
 
 ---
 
@@ -248,7 +280,8 @@ api.interceptors.response.use(
 
 | 接口 | 方法 + 路径 | 角色 | 关键参数 | 响应 data | 常见错误 |
 |---|---|---|---|---|---|
-| 创建订单 | POST `/api/orders` | Customer | body: `cartItemIds`(long[],必), `addressId`(必), `couponId`(可选) | `{orderId,totalAmount,discountAmount,payableAmount}` | 购物车条目/地址/商品不存在→404/400；库存不足→400；优惠券不可用→400 |
+| 创建订单 | POST `/api/orders` | Customer | body: `cartItemIds`(long[],必), `addressId`(必), **`couponIds`(long[],可选)** | `{orderId,totalAmount,discountAmount,payableAmount}` | 购物车条目/地址/商品不存在→404/400；库存不足→400；券不可用/未达门槛/同类型多张/不适用本店→400 |
+| **优惠券试算** | POST `/api/orders/coupon-preview` | Customer | body: `cartItemIds`(long[],必), `couponIds`(long[],可选) | `{totalAmount,discountAmount,payableAmount,appliedCouponIds}` | 同下单的券校验错误→400 |
 | 我的订单 | GET `/api/orders` | Customer | query: `status`(可选), `page`,`size` | 分页：`{id,status,payableAmount,createdAt,storeName,itemCount}` | — |
 | 订单详情 | GET `/api/orders/{orderId}` | Customer（本人）/ Staff（本店） | path | `{id,status,totalAmount,discountAmount,payableAmount,createdAt,paidAt,address{...},items[...]}` | 不存在/越权→404/403 |
 | 支付 | POST `/api/orders/{orderId}/pay` | Customer（本人） | body `{}` | `{status:"PAID", paidAt}` | 状态非 PENDING_PAYMENT→400 |
@@ -258,7 +291,14 @@ api.interceptors.response.use(
 | 门店订单列表 | GET `/api/stores/{storeId}/orders` | Staff（本店） | query: `status`,`page`,`size` | 分页（同我的订单） | 非本店→403 |
 | 发货 | POST `/api/stores/{storeId}/orders/{orderId}/ship` | Staff（本店） | body: `trackingNumber`, `carrier` | `{status:"SHIPPED", shippedAt}` | 状态非 PAID→400；非本店→403 |
 
-> 取消/退款响应里 `refunded` / `refundedAt`：已支付订单取消时 `refunded=true`，未支付时 `false`。取消和退款都会恢复库存并把已用优惠券退回 UNUSED。
+> 取消/退款响应里 `refunded` / `refundedAt`：已支付订单取消时 `refunded=true`，未支付时 `false`。取消和退款都会恢复库存并把已用优惠券（**含多张**）退回 UNUSED。
+>
+> **多优惠券叠加（重点）：**
+> - 一笔订单可同时使用 **折扣(DISCOUNT) + 满减(FULL_REDUCTION) + 直减(DIRECT_OFF) 各一张**，最多 3 张；**同类型只能选 1 张**（选了两张折扣券会 400）。
+> - 前端把所有选中券 ID 放进 `couponIds` 即可，**顺序无所谓**——后端会穷举所有先后组合，返回**折扣最大**的方案。
+> - **门槛（满减券 `minOrderAmount`）按订单原始总额判定**：达标与否在选券时即可确定，不会因为先用了折扣把金额压低而失效。任一选中券不达门槛/不适用本店，整单报 400（`message` 会指明是哪张券）。
+> - **店铺券只能用于该店订单**（全局券 `storeId=null` 不限）。当前订单为单店订单。
+> - **建议流程**：结算页用户勾选券 → 调 `POST /api/orders/coupon-preview` 实时展示「预计优惠 `discountAmount` / 实付 `payableAmount`」→ 用户确认后调 `POST /api/orders` 下单。下单时后端会**重新计算**，不依赖试算结果（试算的 `appliedCouponIds` 仅供展示最优顺序）。
 
 ### 模块六：收货地址（Customer）
 
@@ -288,11 +328,16 @@ api.interceptors.response.use(
 | 可领券列表 | GET `/api/coupon-groups` | 游客（领取需登录） | query: `page,size` | 分页：`{id,name,type,value,minOrderAmount,expireAt,totalCount,remainCount,storeId,storeName}` | — |
 | 领取优惠券 | POST `/api/coupon-groups/{groupId}/claim` | Customer | path | `{couponId}` | 券组不存在→404；已抢光/已领过/已过期→400 |
 | 我的优惠券 | GET `/api/coupons/mine` | Customer | query: `status`(UNUSED/USED/EXPIRED,可选) | **数组**：`[{id,groupName,type,value,minOrderAmount,expireAt,status,storeId}]` | — |
-| 发布店铺券 | POST `/api/stores/{storeId}/coupon-groups` | Staff（本店） | body: `name,type,value,minOrderAmount,totalCount,startAt,expireAt` | `{id}` | 非本店→403 |
-| 发布全局券 | POST `/api/coupon-groups` | Admin | body: 同上（无 storeId） | `{id}` | 非 Admin→403 |
+| 发布店铺券 | POST `/api/stores/{storeId}/coupon-groups` | Staff（本店） | body: `name,type,value,minOrderAmount,totalCount,startAt,expireAt` | `{id}` | 非本店→403；type/value/门槛不合法→400 |
+| 发布全局券 | POST `/api/coupon-groups` | Admin | body: 同上（无 storeId） | `{id}` | 非 Admin→403；type/value/门槛不合法→400 |
 | 删除券组 | DELETE `/api/coupon-groups/{groupId}` | Staff（本店券）/ Admin（全局券） | path | `null` | 越权→403；不存在→404 |
 
-> `type=DISCOUNT` 时 `value` 为折扣率（0.5=五折）；`type=AMOUNT_OFF` 时 `value` 为减免金额（元）。`storeId=null` 为全局券。
+> **券类型 `type`（已由 2 类拆为 3 类）：**
+> - `DISCOUNT`（折扣券）：`value` 为折扣率（0.5=五折，须 0<value<1）；`minOrderAmount` 任意。
+> - `FULL_REDUCTION`（满减券）：`value` 为减免金额（元，>0）；**`minOrderAmount` 必须 >0**（即门槛）。
+> - `DIRECT_OFF`（直减券）：`value` 为减免金额（元，>0）；**`minOrderAmount` 必须 =0**（无门槛）。
+>
+> `storeId=null` 为全局券。发布券表单请按上述约束做前端校验，否则后端返回 400。
 
 ### 模块九：商店管理（Admin）
 
@@ -310,8 +355,150 @@ api.interceptors.response.use(
 |---|---|---|---|---|---|
 | 门店订单报表 | GET `/api/stores/{storeId}/reports/orders` | Staff（本店） | query: `startDate,endDate`(yyyy-MM-dd,可选) | `{totalOrders,totalRevenue,averageOrderAmount,statusBreakdown{...},dailyRevenue[{date,revenue,orders}]}` | 非本店→403；起始晚于截止→400 |
 | 全局汇总报表 | GET `/api/admin/reports/orders` | Admin | query: 同上 | `{totalOrders,totalRevenue,storeBreakdown[{storeId,storeName,orders,revenue}],dailyRevenue[...]}` | 非 Admin→403 |
+| **门店报表导出 xlsx** | GET `/api/stores/{storeId}/reports/orders/export` | Staff（本店） | query: 同上 | **xlsx 二进制流**（非 JSON） | 非本店→403 |
+| **全局报表导出 xlsx** | GET `/api/admin/reports/orders/export` | Admin | query: 同上 | **xlsx 二进制流**（非 JSON） | 非 Admin→403 |
 
 > 日期缺省：`endDate` 默认今天，`startDate` 默认截止前 30 天。`totalOrders` 含所有状态，`totalRevenue` 仅统计 COMPLETED 订单。
+>
+> **导出接口（前端特殊处理）：** 返回的是 Excel 文件流，不是统一 JSON 结构，**不能走第 3 节的 JSON 响应拦截器**，否则会解析失败。请单独发起请求（仍需带 `Authorization` 头）并以 blob 接收下载：
+> - 工作簿含 3 个 Sheet：汇总 / 状态分布(门店)·门店分布(全局) / 每日收入。
+> - 响应头 `Content-Disposition` 自带文件名（如 `store-1-order-report.xlsx`）。
+> - 鉴权失败（非本店/非 Admin/未登录）时仍返回 **JSON 错误体**（此时不是文件流），前端可据 `Content-Type` 判断：是 `application/vnd.openxmlformats-...` 即文件、否则按 JSON 解析错误。
+>
+> ```js
+> // 示例：axios blob 下载（绕过 JSON 拦截器，单独实例）
+> const resp = await axios.get(`/api/stores/${storeId}/reports/orders/export`, {
+>   params: { startDate, endDate },
+>   headers: { Authorization: `Bearer ${token}` },
+>   responseType: 'blob',
+> });
+> const url = URL.createObjectURL(resp.data);
+> const a = document.createElement('a');
+> a.href = url; a.download = 'order-report.xlsx'; a.click();
+> URL.revokeObjectURL(url);
+> ```
+
+### 模块十一：实时客服
+
+#### 11.1 REST 接口
+
+| 接口 | 方法 + 路径 | 角色 | 关键参数 | 响应 data | 常见错误 |
+|---|---|---|---|---|---|
+| 会话列表 | GET `/api/chat/sessions` | 需要登录 | — | 数组（角色感知，见下） | — |
+| 历史消息 | GET `/api/chat/sessions/{id}/messages` | 需要登录 | query: `before`(游标，可选), `size`(默认20) | 数组（按 id 倒序） | 不存在/越权→404/403 |
+| 接入会话 | POST `/api/chat/sessions/{id}/claim` | Staff（本店） | body `{}` | `null` | 已被他人接待→400；非本店→403 |
+| 释放会话 | POST `/api/chat/sessions/{id}/release` | Staff（本店，assignee） | body `{}` | `null` | 非 assignee→403 |
+
+**会话列表响应字段（Customer 视角）：**
+
+```json
+[{
+  "sessionId": 1, "storeId": 1, "storeName": "南鲸旗舰店",
+  "lastMessage": "你好", "lastMessageAt": "2026-06-09T10:00:00",
+  "staffOnline": true
+}]
+```
+
+**会话列表响应字段（Staff 视角）：**
+
+```json
+[{
+  "sessionId": 1, "customerId": 3, "customerNickname": "测试顾客",
+  "customerOnline": true, "assigneeStaffId": null, "assigneeNickname": null,
+  "lastMessage": "你好", "lastMessageAt": "2026-06-09T10:00:00"
+}]
+```
+
+> `assigneeStaffId=null`=未接入；等于当前 staffId=本人接待；其他值=他人接待。
+
+**历史消息响应字段：**
+
+```json
+[{ "id": 42, "sessionId": 1, "senderRole": "CUSTOMER", "senderId": 3,
+   "content": "你好", "createdAt": "2026-06-09T10:00:00" }]
+```
+
+> 游标翻页：用本次返回的最小 `id` 作为下次请求的 `before` 值，可持续向上翻历史。
+
+#### 11.2 WebSocket 连接与订阅
+
+**连接（STOMP over WebSocket）：**
+
+```js
+import { Client } from '@stomp/stompjs';
+
+const client = new Client({
+  brokerURL: 'ws://localhost:8080/ws',
+  connectHeaders: {
+    Authorization: `Bearer ${token}`,   // JWT，必须
+  },
+  onConnect: () => {
+    // 连接成功，开始订阅
+  },
+  onStompError: (frame) => {
+    // 连接被拒（token 无效）
+  },
+});
+client.activate();
+```
+
+**订阅（买家）：**
+```js
+// 收取客服消息
+client.subscribe('/user/queue/messages', (msg) => {
+  const data = JSON.parse(msg.body); // ChatMessageResponse
+});
+// 错误回执
+client.subscribe('/user/queue/errors', (msg) => {
+  const err = JSON.parse(msg.body); // {code, message}
+});
+```
+
+**订阅（客服）：**
+```js
+// 收取分配给自己的买家消息
+client.subscribe('/user/queue/messages', (msg) => { ... });
+// 店铺主题：未接入新消息 + 接入/释放事件
+client.subscribe(`/topic/store.${storeId}`, (msg) => {
+  const event = JSON.parse(msg.body); // StoreTopicEvent
+  // event.type: "MESSAGE" | "CLAIMED" | "RELEASED"
+});
+// 错误回执
+client.subscribe('/user/queue/errors', (msg) => { ... });
+```
+
+#### 11.3 发送消息
+
+**买家发消息：**
+```js
+client.publish({
+  destination: '/app/chat.customer.send',
+  body: JSON.stringify({ storeId: 1, content: '你好，请问有货吗？' }),
+});
+```
+
+**客服发消息：**
+```js
+client.publish({
+  destination: '/app/chat.staff.send',
+  body: JSON.stringify({ sessionId: 1, content: '您好，有货的！' }),
+});
+```
+
+#### 11.4 店铺主题事件（StoreTopicEvent）
+
+| `type` | 含义 | 关键字段 | 客服端建议处理 |
+|---|---|---|---|
+| `MESSAGE` | 未接入会话有新消息 | `sessionId`, `message`(ChatMessageResponse) | 刷新待接入会话列表，展示新消息提醒 |
+| `CLAIMED` | 会话已被某客服接入 | `sessionId`, `staffId` | 从待接入列表移除；更新该会话的 `assigneeStaffId` |
+| `RELEASED` | 会话已释放回公共池 | `sessionId` | 重新显示在待接入列表 |
+
+#### 11.5 注意事项
+
+- **token 续期**：WebSocket 连接建立后 token 过期不会自动断开，但建议在页面加载时先确保 accessToken 有效（调 `/api/auth/refresh`），再建立 WS 连接；或在 onStompError 时重连。
+- **当前实现不发 STOMP ERROR 帧**：token 无效时后端拒绝 CONNECT，WS 连接关闭，客户端收不到结构化 STOMP ERROR 帧（后续版本会补），可监听 `onDisconnect` / `onWebSocketClose` 作为失败信号。
+- **消息顺序**：同一会话内消息按 `id`（自增）有序；`id` 可直接用于游标分页。
+- **建议联调顺序**：① ADMIN 建商店，STAFF 绑定；② CUSTOMER 登录，连接 WS，发第一条消息建会话；③ STAFF 登录，连接 WS，订阅店铺主题，收到 `StoreTopicEvent{type:MESSAGE}`；④ STAFF 调 `/claim` 接入；⑤ 双向收发消息；⑥ STAFF 调 `/release` 释放。
 
 ---
 
@@ -327,8 +514,9 @@ api.interceptors.response.use(
 | | `SHIPPED` | 已发货（待收货） |
 | | `COMPLETED` | 已完成（已收货） |
 | | `CANCELLED` | 已取消 / 已退款 |
-| 优惠券类型 `type` | `DISCOUNT` | 折扣券，`value` 为折扣率（0.5=五折） |
-| | `AMOUNT_OFF` | 满减券，`value` 为减免金额（元） |
+| 优惠券类型 `type` | `DISCOUNT` | 折扣券，`value` 为折扣率（0.5=五折，0<value<1） |
+| | `FULL_REDUCTION` | 满减券（有门槛），`value` 为减免金额（元），`minOrderAmount`>0 |
+| | `DIRECT_OFF` | 直减券（无门槛），`value` 为减免金额（元），`minOrderAmount`=0 |
 | 优惠券状态 `status` | `UNUSED` | 未使用 |
 | | `USED` | 已使用 |
 | | `EXPIRED` | 已过期 |
@@ -366,11 +554,20 @@ PENDING_PAYMENT --pay--> PAID --ship(Staff)--> SHIPPED --confirm--> COMPLETED --
 
 ### 6.2 数据库初始化
 
-1. 创建数据库：`CREATE DATABASE bluewhale DEFAULT CHARSET utf8mb4;`
-2. 执行建表脚本 `docs/schema.sql`（含 12 张表 + 一条初始数据）。
-3. 确保 `application.yml` 的数据源指向该库（默认端口 3305）。
+数据库结构与种子数据由 **Flyway 自动迁移**管理，无需再手动执行 SQL：
 
+1. 创建一个**空库**：`CREATE DATABASE bluewhale DEFAULT CHARSET utf8mb4;`
+2. 确保 `application.yml` 的数据源指向该库（默认端口 3305）。
+3. 启动应用——Flyway 会自动执行 `src/main/resources/db/migration/` 下的脚本：
+   - `V1__init_schema.sql`：建 12 张表；
+   - `V2__add_product_version.sql`：商品加乐观锁 `version` 列；
+   - `V3__coupon_stacking.sql`：券类型拆分（满减/直减）+ 建 `order_coupon` 关联表（多券）；
+   - `V4__chat.sql`：建 `chat_session` + `chat_message` 两张表（实时客服，任务 7）；
+   - `R__seed_data.sql`：灌入测试商店 / 账号 / 分类 / 商品。
+
+> 迁移脚本是单一可执行来源，原 `docs/schema.sql` / `docs/data.sql` 已迁入上述目录。
 > 表结构使用逻辑删除（`deleted` 字段，0 正常 / 1 删除），MyBatis Plus 自动过滤。
+> 详见 [数据库迁移指南.md](./数据库迁移指南.md)。
 
 ### 6.3 启动后端服务
 
@@ -391,17 +588,17 @@ mvn test
 
 ### 6.4 测试账号说明
 
-#### 预置种子账号（执行 `docs/data.sql` 后可直接登录）
+#### 预置种子账号（Flyway 启动时自动灌入，可直接登录）
 
-`docs/data.sql` 在建表后写入了下列账号（密码为真实 BCrypt 哈希，可直接登录）及一个测试商店「南鲸旗舰店」、两级商品分类和若干测试商品：
+迁移脚本 `R__seed_data.sql` 会写入下列账号（密码为真实 BCrypt 哈希，可直接登录）及一个测试商店「南鲸旗舰店」、两级商品分类和若干测试商品：
 
 | 角色     | 手机号        | 明文密码          | 昵称       | 备注                 |
 | -------- | ------------- | ----------------- | ---------- | -------------------- |
-| ADMIN    | `10000000000` | `Admin@123456`    | 超级管理员 | —                    |
+| ADMIN    | `13000000000` | `Admin@123456`    | 超级管理员 | —                    |
 | STAFF    | `13100000001` | `Staff@123456`    | 测试店员   | 已绑定「南鲸旗舰店」 |
 | CUSTOMER | `13200000002` | `Customer@123456` | 测试顾客   | —                    |
 
-> 执行顺序：先跑 `schema.sql` 建表，再跑 `data.sql` 灌数据。`data.sql` 用显式主键 ID，重复执行会因主键冲突失败，需要重置数据时请先清表。
+> 种子数据放在 Flyway 可重复迁移 `R__seed_data.sql` 中，脚本开头会先清空相关表再插入，启动时自动应用；需要改种子时直接改该文件并重启即可，无需手动跑 SQL。
 
 如需手动获取额外账号，可按下面三种方式：
 
@@ -429,7 +626,9 @@ curl -X POST http://localhost:8080/api/auth/register \
 -- 先用接口注册 13700137001 / Abc123456，再执行：
 UPDATE `user` SET role = 'ADMIN', store_id = NULL WHERE phone = '13700137001';
 ```
-> `schema.sql` 自带的 ADMIN 种子（手机号 `10000000000`）密码是**占位哈希、无法登录**。若已执行 `docs/data.sql`，其中的同号 ADMIN 账号密码为真实哈希 `Admin@123456`，可直接登录，无需再手动改库。
+> 预置 ADMIN（手机号 `13000000000`）由 `R__seed_data.sql` 写入，密码为真实哈希 `Admin@123456`，可直接登录，无需再手动改库。
+>
+> 注：ADMIN 手机号特意用 `13000000000`（而非早期占位的 `10000000000`），因为登录/注册接口对 `phone` 强制 `^1[3-9]\d{9}$` 格式校验，`10` 开头的号码会被 `@Valid` 直接拒绝、根本进不到登录逻辑。
 
 ### 6.5 联调建议顺序
 
